@@ -3,6 +3,8 @@
 //! These functions operate purely on `&str` input (no model, no I/O, no
 //! `unsafe`) and are always available regardless of feature flags.
 
+pub mod hallucination;
+
 /// Returns the numeric value of a single English cardinal-number word, or
 /// `None` if `word` (already lowercased) is not a recognized number word.
 fn number_word_value(word: &str) -> Option<u64> {
