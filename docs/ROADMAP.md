@@ -1,5 +1,5 @@
 # Roadmap — whisper-rs
-<!-- rev:004 -->
+<!-- rev:005 -->
 
 **Project type:** Rust (pre-scaffold) — no `Cargo.toml` exists yet. This roadmap tracks the crate
 defined in `docs/superpowers/specs/2026-07-14-whisper-rs-design.md` and built by the plans under
@@ -49,26 +49,25 @@ The strongest market differentiator (no Rust crate ships native diarization ergo
 > accept the licenses and place the `.onnx` files under `models/`. The plan's model-gated tasks (3–5) and
 > their tests stay `#[ignore]`d until then. See `docs/BACKLOG.md` P3.
 
-## Phase 3 — Streaming (NOT STARTED — plan written)
+## Phase 3 — Streaming (IN PROGRESS — pure policy core done)
 `feature = "streaming"`. Plan: `docs/superpowers/plans/2026-07-14-whisper-rs-v3-streaming.md`. Fills the
-confirmed gap — no tool ships real-time diarized transcription. The pure `StreamPolicy` commit logic is
-testable without a model; the worker session + mic + e2e are model/hardware-gated. Reference: Handy
-`StreamRouter` (BACKLOG P6).
-- [ ] `StreamPolicy` trait + `LocalAgreement2` + `TwoPass` (both pure/testable, configurable)
+confirmed gap — no tool ships real-time diarized transcription. Reference: Handy `StreamRouter` (BACKLOG P6).
+- [x] `StreamPolicy` trait + `LocalAgreement2` + `TwoPass` (pure, tested) (95a887e)
 - [ ] `StreamSession` worker thread + VAD-boundary chunking (model-gated)
 - [ ] `cpal` mic capture source (hardware-gated)
-- [ ] `Pipeline::stream(policy)` emitting `PartialText` / `CommittedSegment` / `SpeakerTurn` / `Error`
+- [ ] `Pipeline::stream(policy)` emitting `PartialText` / `CommittedSegment` / `Error`
 
-## Phase 4 — Preprocessing, post-processing & model downloader (NOT STARTED)
-Depends on Phase 1 (post-processing after Phases 2–3 for full effect).
-- [ ] Audio preprocessing levels 0–4 (Galle scheme) + Silero VAD segmentation
-- [ ] Hallucination flagging (cross-method disagreement) — `SegmentFlags.hallucination_suspect`
-- [ ] Number normalization (spoken → digit)
-- [ ] `ModelRef::download` + cache behind `feature = "download"`
+## Phase 4 — Preprocessing, post-processing & model downloader (IN PROGRESS)
+Plan: `docs/superpowers/plans/2026-07-14-whisper-rs-v4-preprocessing.md`.
+- [x] Number normalization (spoken → digit) — `postprocess::normalize_numbers` (8adcf12)
+- [x] Post-processing transforms: repeat-collapse + filler-removal + `PostConfig` wired into `Pipeline` (8adcf12, bc17537)
+- [x] `ModelRef::download` + cache behind `feature = "download"` (whisper GGML, public models) (1c908e5)
+- [ ] Audio preprocessing levels 0–4 (Galle scheme) + VAD (energy VAD pure; Silero ONNX model-gated) — planned
+- [ ] Hallucination flagging (cross-pass disagreement) — `SegmentFlags.hallucination_suspect` — planned (model-gated wiring)
 
 ## Test coverage
-**N/A** — no code exists yet, no coverage tool wired in. `cargo llvm-cov` gets wired in Phase 1
-(Task 1 lands the crate); see `docs/BACKLOG.md` P2.
+Wired via `cargo llvm-cov` in CI (`.github/workflows/ci.yml`). Local baseline pending a full run; the
+suite is **34 passing / 4 model-gated (`#[ignore]`)** at `--all-features`.
 
 ## Deferred to post-v1 (see `docs/BACKLOG.md`)
 Stereo channel-split diarization fast-path · DER metrics hooks · multi-mic DOA/TDOA spatial
