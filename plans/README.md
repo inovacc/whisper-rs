@@ -8,8 +8,8 @@ conditions, and update your row when done. Plans were vetted against the live co
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
-| 001 | Fix streaming finalize/commit + add `Transcribe` seam | P1 | M | — | TODO |
-| 002 | Reconcile README/AGENTS/ISSUES with shipped code | P1 | S | — | TODO |
+| 001 | Fix streaming finalize/commit + add `Transcribe` seam | P1 | M | — | DONE (54c7c4c) |
+| 002 | Reconcile README/AGENTS/ISSUES with shipped code | P1 | S | — | DONE |
 | 003 | Delete dead code (`ndarray` dep, `Context::as_ptr`) | P2 | S | — | TODO |
 | 004 | Fix VAD `min_speech_ms` filter (inert at defaults) | P2 | S | — | TODO |
 | 005 | Harden the model downloader (traversal, checksum, truncation) | P1 | M | — | TODO |
