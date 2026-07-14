@@ -13,7 +13,7 @@ conditions, and update your row when done. Plans were vetted against the live co
 | 003 | Delete dead code (`ndarray` dep, `Context::as_ptr`) | P2 | S | — | DONE |
 | 004 | Fix VAD `min_speech_ms` filter (inert at defaults) | P2 | S | — | DONE |
 | 005 | Harden the model downloader (traversal, checksum, truncation) | P1 | M | — | DONE |
-| 006 | Speed up agglomerative clustering (O(n³)→O(n²)) | P2 | M | — | TODO |
+| 006 | Speed up agglomerative clustering (O(n³)→O(n²)) | P2 | M | — | DONE |
 | 007 | Flush resampler delay so timestamps stay aligned | P2 | M | — | TODO |
 | 008 | Add CI gates: fmt check, cargo-audit, MSRV leg | P2 | S | — | TODO |
 | 009 | Close test-coverage gaps (float WAV, downloader, cfg branch) | P3 | S | 001, 005 | TODO |
