@@ -2,4 +2,7 @@
 
 pub mod error;
 
+#[doc(hidden)]
+pub mod ffi;
+
 pub use error::{Result, WhisperError};

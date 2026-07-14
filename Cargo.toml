@@ -18,5 +18,5 @@ hound = "3"
 rubato = "0.15"
 
 [build-dependencies]
-bindgen = "0.70"
+bindgen = "0.72"
 cc = "1"
