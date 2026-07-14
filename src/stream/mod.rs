@@ -35,6 +35,8 @@ pub trait StreamPolicy {
 }
 
 pub mod local_agreement;
+pub mod session;
 pub mod two_pass;
 pub use local_agreement::LocalAgreement2;
+pub use session::StreamSession;
 pub use two_pass::TwoPass;

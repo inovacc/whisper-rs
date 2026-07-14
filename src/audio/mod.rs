@@ -3,6 +3,12 @@ use crate::error::{Result, WhisperError};
 use rubato::{Resampler, SincFixedIn, SincInterpolationParameters, SincInterpolationType, WindowFunction};
 use std::path::Path;
 
+pub mod preprocess;
+pub mod vad;
+
+pub use preprocess::{preprocess, PreprocessLevel};
+pub use vad::{segment, VadConfig};
+
 const TARGET_RATE: u32 = 16_000;
 
 pub struct AudioInput {

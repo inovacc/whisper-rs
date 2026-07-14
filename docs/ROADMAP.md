@@ -1,5 +1,5 @@
 # Roadmap — whisper-rs
-<!-- rev:005 -->
+<!-- rev:006 -->
 
 **Project type:** Rust (pre-scaffold) — no `Cargo.toml` exists yet. This roadmap tracks the crate
 defined in `docs/superpowers/specs/2026-07-14-whisper-rs-design.md` and built by the plans under
@@ -53,21 +53,23 @@ The strongest market differentiator (no Rust crate ships native diarization ergo
 `feature = "streaming"`. Plan: `docs/superpowers/plans/2026-07-14-whisper-rs-v3-streaming.md`. Fills the
 confirmed gap — no tool ships real-time diarized transcription. Reference: Handy `StreamRouter` (BACKLOG P6).
 - [x] `StreamPolicy` trait + `LocalAgreement2` + `TwoPass` (pure, tested) (95a887e)
-- [ ] `StreamSession` worker thread + VAD-boundary chunking (model-gated)
-- [ ] `cpal` mic capture source (hardware-gated)
-- [ ] `Pipeline::stream(policy)` emitting `PartialText` / `CommittedSegment` / `Error`
+- [x] `StreamSession` (synchronous push/poll/finalize) + `Pipeline::into_stream` — e2e verified (01303ef)
+- [ ] VAD-boundary incremental decoding (replace the O(n²) full-buffer re-decode) — perf, BACKLOG P3
+- [ ] Worker-thread session variant + `cpal` mic capture source (hardware-gated)
 
 ## Phase 4 — Preprocessing, post-processing & model downloader (IN PROGRESS)
 Plan: `docs/superpowers/plans/2026-07-14-whisper-rs-v4-preprocessing.md`.
 - [x] Number normalization (spoken → digit) — `postprocess::normalize_numbers` (8adcf12)
 - [x] Post-processing transforms: repeat-collapse + filler-removal + `PostConfig` wired into `Pipeline` (8adcf12, bc17537)
 - [x] `ModelRef::download` + cache behind `feature = "download"` (whisper GGML, public models) (1c908e5)
-- [ ] Audio preprocessing levels 0–4 (Galle scheme) + VAD (energy VAD pure; Silero ONNX model-gated) — planned
-- [ ] Hallucination flagging (cross-pass disagreement) — `SegmentFlags.hallucination_suspect` — planned (model-gated wiring)
+- [x] Audio preprocessing levels 0–4 (Galle scheme) + energy VAD (pure) (4df4175) + wired into `Pipeline` (4623c9e)
+- [x] Hallucination flagging heuristic — pure cross-pass comparison + `apply_flags` (cf19308)
+- [ ] Silero ONNX VAD upgrade (model-gated; shares diarization `ort`) — planned
+- [ ] Hallucination second-decode-pass wiring (model-gated) — planned
 
 ## Test coverage
-Wired via `cargo llvm-cov` in CI (`.github/workflows/ci.yml`). Local baseline pending a full run; the
-suite is **34 passing / 4 model-gated (`#[ignore]`)** at `--all-features`.
+`cargo llvm-cov` (CI + local). **Baseline (default features): 71.77% line / 70.31% region**, excluding the
+4 model-gated `#[ignore]`d tests. Full suite at `--all-features`: ~40 passing + model-gated ignored.
 
 ## Deferred to post-v1 (see `docs/BACKLOG.md`)
 Stereo channel-split diarization fast-path · DER metrics hooks · multi-mic DOA/TDOA spatial

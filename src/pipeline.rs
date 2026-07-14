@@ -36,11 +36,13 @@ pub struct PipelineBuilder {
     whisper_model: Option<ModelRef>,
     language: Option<String>,
     post: Option<PostConfig>,
+    preprocess: crate::audio::preprocess::PreprocessLevel,
 }
 impl PipelineBuilder {
     pub fn whisper_model(mut self, m: ModelRef) -> Self { self.whisper_model = Some(m); self }
     pub fn language(mut self, l: Option<String>) -> Self { self.language = l; self }
     pub fn postprocess(mut self, cfg: PostConfig) -> Self { self.post = Some(cfg); self }
+    pub fn preprocess(mut self, level: crate::audio::preprocess::PreprocessLevel) -> Self { self.preprocess = level; self }
     pub fn build(self) -> Result<Pipeline> {
         let model = self.whisper_model
             .ok_or_else(|| WhisperError::Config("whisper_model is required".into()))?;
@@ -50,18 +52,25 @@ impl PipelineBuilder {
             transcriber,
             opts: AsrOptions { language: self.language, ..Default::default() },
             post: self.post,
+            preprocess: self.preprocess,
         })
     }
 }
 
 #[derive(Debug)]
-pub struct Pipeline { transcriber: Transcriber, opts: AsrOptions, post: Option<PostConfig> }
+pub struct Pipeline {
+    transcriber: Transcriber,
+    opts: AsrOptions,
+    post: Option<PostConfig>,
+    preprocess: crate::audio::preprocess::PreprocessLevel,
+}
 
 impl Pipeline {
     pub fn builder() -> PipelineBuilder { PipelineBuilder::default() }
 
     pub fn transcribe_file<P: AsRef<Path>>(&mut self, path: P) -> Result<Transcript> {
         let pcm = AudioInput::from_wav_file(path)?.to_mono_16k()?;
+        let pcm = crate::audio::preprocess::preprocess(&pcm, self.preprocess);
         let mut segments = self.transcriber.transcribe(&pcm, &self.opts)?;
         if let Some(post) = &self.post {
             for segment in &mut segments {
@@ -69,5 +78,13 @@ impl Pipeline {
             }
         }
         Ok(Transcript { segments })
+    }
+}
+
+#[cfg(feature = "streaming")]
+impl Pipeline {
+    /// Turn this pipeline into a streaming session using the given policy.
+    pub fn into_stream(self, policy: Box<dyn crate::stream::StreamPolicy + Send>) -> crate::stream::StreamSession {
+        crate::stream::StreamSession::new(self.transcriber, policy, self.opts)
     }
 }

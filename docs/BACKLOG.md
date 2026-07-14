@@ -1,5 +1,5 @@
 # Backlog — whisper-rs
-<!-- rev:005 -->
+<!-- rev:006 -->
 
 Grounded in `docs/discovery/IDEA-BRIEF.md`, the approved design spec
 (`docs/superpowers/specs/2026-07-14-whisper-rs-design.md`), and the foundation plan
@@ -98,7 +98,16 @@ that whisper-rs lacks. (Handy has **no diarization** — confirming that remains
 Full evidence + file:line citations: discovery evidence (`...\scratchpad\exec\handy-analysis.md` was not
 written — the analyst lacked a Write tool; citations are in the run record / this backlog).
 
+## P3 — Streaming performance
+- **VAD-boundary incremental decoding for `StreamSession`.** The v1 session re-decodes the whole buffer
+  every poll (O(n²)); the streaming e2e took ~25 min on a 11 s clip. Use `audio::vad` boundaries to decode
+  only new/active regions and reuse committed prefixes. Effort: L. (ROADMAP Phase 3.)
+
 ## Resolved
+- 2026-07-14 — **Phase 4 preprocessing + streaming session (`feat/preprocessing`).** Tiered preprocessing
+  levels 0–4 + energy VAD (4df4175) wired into `Pipeline` (4623c9e); hallucination heuristic (cf19308);
+  CI macOS/Windows matrix (7dedff3); synchronous `StreamSession` + `Pipeline::into_stream` with the
+  streaming e2e verified against the tiny model (01303ef). Coverage baseline: 71.77% line / 70.31% region.
 - 2026-07-14 — **Post-processing + streaming core + downloader (`feat/postproc-streaming`).**
   Pure text transforms: number normalization, repeat-collapse, filler-removal (8adcf12) + `PostConfig`
   wired into `Pipeline` (bc17537); pure streaming policy core — `StreamPolicy` + LocalAgreement-2 +
