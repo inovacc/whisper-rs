@@ -55,7 +55,8 @@ pub fn segment(pcm: &[f32], sample_rate: u32, cfg: &VadConfig) -> Vec<(f32, f32)
         match (run_start, h) {
             (None, true) => run_start = Some(idx),
             (Some(s), false) => {
-                if idx - s >= min_frames {
+                let active_count = active[s..idx].iter().filter(|&&a| a).count();
+                if active_count >= min_frames {
                     spans.push((s as f32 * secs_per_frame, idx as f32 * secs_per_frame));
                 }
                 run_start = None;
@@ -66,7 +67,8 @@ pub fn segment(pcm: &[f32], sample_rate: u32, cfg: &VadConfig) -> Vec<(f32, f32)
     // flush a trailing run that reaches the end of the signal
     if let Some(s) = run_start {
         let idx = held.len();
-        if idx - s >= min_frames {
+        let active_count = active[s..idx].iter().filter(|&&a| a).count();
+        if active_count >= min_frames {
             spans.push((s as f32 * secs_per_frame, idx as f32 * secs_per_frame));
         }
     }
