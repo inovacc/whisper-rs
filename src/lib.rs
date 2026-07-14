@@ -1,5 +1,6 @@
 //! whisper-rs — a feature-rich, safe Rust wrapper over whisper.cpp (local use).
 
+pub mod audio;
 pub mod error;
 pub mod output;
 
