@@ -1,10 +1,11 @@
 # Backlog — whisper-rs
-<!-- rev:006 -->
+<!-- rev:007 -->
 
 Grounded in `docs/discovery/IDEA-BRIEF.md`, the approved design spec
-(`docs/superpowers/specs/2026-07-14-whisper-rs-design.md`), and the foundation plan
-(`docs/superpowers/plans/2026-07-14-whisper-rs-v1-foundation.md`). No code exists yet — items are
-scoped as "before/after Phase N" rather than file:line references.
+(`docs/superpowers/specs/2026-07-14-whisper-rs-design.md`), the implementation plans under
+`docs/superpowers/plans/`, and the advisor maturation plans under `plans/`. The foundation + every
+model-independent v1 slice is built and merged; open items below are the model-gated, perf, and
+follow-up work that remains.
 
 ## P1 — Blocking / must resolve before or during Phase 1
 - **Pin whisper.cpp submodule to a known tag** and confirm the `build.rs` source-file list matches
@@ -21,8 +22,13 @@ scoped as "before/after Phase N" rather than file:line references.
 ## P2 — Near-term
 - **Pin `ort`** to the exact pre-release rc + a tracking note when the diarization ONNX tasks land — it
   is pre-1.0, an API-stability risk (design spec). Effort: S.
-- **macOS/Windows CI validation** — current CI (`.github/workflows/ci.yml`) builds Linux only. Extend to
-  a matrix once the FFI build is confirmed on other OSes. Effort: M.
+- **Wire real SHA-256 in `download_model_verified`** — the integrity hook exists but returns a `Config`
+  error when a digest is supplied (no `sha2` dep yet, a maintainer decision). Add `sha2`, compute the
+  temp-file digest before `rename`, and un-stub. Effort: S. (advisor plan 005 STOP-condition follow-up)
+- **Pin `HF_BASE` to an immutable revision** — the downloader resolves models from the mutable
+  `…/resolve/main` ref; pin a commit hash for a known-good model set (supply-chain hardening). Effort: S.
+- **Confirm the MSRV 1.75 build actually passes** — advisor plan 008 added the CI leg but it was not
+  verified locally; if `ureq`/`bindgen`/`rubato` need newer than 1.75, raise `rust-version` or the floor. Effort: S.
 
 ## P3 — Deferred v1-adjacent features (design-approved, scheduled post-foundation)
 These are all part of the feature-rich v1 but land in later build-order plans (Phases 2–4):
@@ -104,6 +110,17 @@ written — the analyst lacked a Write tool; citations are in the run record / t
   only new/active regions and reuse committed prefixes. Effort: L. (ROADMAP Phase 3.)
 
 ## Resolved
+- 2026-07-14 — **Maturation / hardening pass — 10 advisor plans (`plans/`, merged to `main`).**
+  Independent `improve` audit → vetted plans, each executed + reviewed + merged: streaming
+  finalize/commit data-loss fixes + `Transcribe` seam (001, 54c7c4c); README/AGENTS/ISSUES reconciled
+  (002); dead code removed — unused `ndarray` dep + `Context::as_ptr` (003); VAD `min_speech_ms` fixed to
+  measure active frames (004); downloader hardened — id path-traversal validation + Content-Length
+  truncation guard + SHA-256 hook (005); agglomerative clustering O(n³·d)→O(n²) via cached distances +
+  Lance–Williams (006); resampler delay drained so word timestamps align (007); CI gates —
+  `cargo fmt --check` + `cargo-audit` + MSRV 1.75 leg + `rustfmt.toml` (008); coverage tests — float-WAV
+  decode, downloader cache-hit, cfg-off download (009); cleanups — in-place preprocess, `join_tokens`,
+  stable `WHISPER_RS_CACHE_DIR` cache dir, hallucination no-overlap doc (010). Coverage 71.77%→78.94% line.
+  Resolves the prior P2 "macOS/Windows CI validation" (a 3-OS matrix now runs) and P2.5 items.
 - 2026-07-14 — **Phase 4 preprocessing + streaming session (`feat/preprocessing`).** Tiered preprocessing
   levels 0–4 + energy VAD (4df4175) wired into `Pipeline` (4623c9e); hallucination heuristic (cf19308);
   CI macOS/Windows matrix (7dedff3); synchronous `StreamSession` + `Pipeline::into_stream` with the
