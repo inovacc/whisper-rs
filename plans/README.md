@@ -17,7 +17,7 @@ conditions, and update your row when done. Plans were vetted against the live co
 | 007 | Flush resampler delay so timestamps stay aligned | P2 | M | — | DONE |
 | 008 | Add CI gates: fmt check, cargo-audit, MSRV leg | P2 | S | — | TODO |
 | 009 | Close test-coverage gaps (float WAV, downloader, cfg branch) | P3 | S | 001, 005 | TODO |
-| 010 | Cleanups (in-place preprocess, token-join, cache dir, doc note) | P3 | S | — | TODO |
+| 010 | Cleanups (in-place preprocess, token-join, cache dir, doc note) | P3 | S | — | DONE |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (reason) | REJECTED (rationale)
 
