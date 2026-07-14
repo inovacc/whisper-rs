@@ -103,10 +103,6 @@ impl Context {
         unsafe { whisper_full_get_segment_t1(self.0, i) }
     }
 
-    pub(crate) fn as_ptr(&self) -> *mut whisper_context {
-        self.0
-    }
-
     /// Raw per-token timing for one segment: (text, t0_centiseconds, t1_centiseconds, probability).
     pub fn segment_tokens(&self, seg: i32) -> Vec<(String, i64, i64, f32)> {
         // SAFETY: seg in [0, n_segments); token indices in [0, n_tokens); pointers are whisper-owned.
