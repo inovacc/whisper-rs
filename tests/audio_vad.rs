@@ -21,3 +21,12 @@ fn silence_tone_silence_yields_one_span() {
 fn pure_silence_yields_no_spans() {
     assert!(segment(&vec![0.0f32; 16000], 16000, &VadConfig::default()).is_empty());
 }
+
+#[test]
+fn short_blip_below_min_speech_is_dropped() {
+    let sr = 16000;
+    let mut sig = vec![0.0f32; sr / 2];
+    sig.extend(tone(sr / 50, 0.5)); // ~20ms tone, well under one 30ms frame
+    sig.extend(vec![0.0f32; sr / 2]);
+    assert!(segment(&sig, sr as u32, &VadConfig::default()).is_empty());
+}
