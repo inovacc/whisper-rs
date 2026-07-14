@@ -2,6 +2,8 @@
 
 pub mod asr;
 pub mod audio;
+#[cfg(feature = "diarization")]
+pub mod diarize;
 pub mod error;
 pub mod output;
 pub mod pipeline;

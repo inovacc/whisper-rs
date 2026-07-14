@@ -53,6 +53,12 @@ impl Context {
         token_timestamps: bool,
         pcm: &[f32],
     ) -> crate::error::Result<()> {
+        if pcm.len() > i32::MAX as usize {
+            return Err(crate::error::WhisperError::Config(format!(
+                "audio too long: {} samples exceeds i32::MAX",
+                pcm.len()
+            )));
+        }
         let clang = CString::new(lang).map_err(|e| crate::error::WhisperError::Config(e.to_string()))?;
         // SAFETY: pcm and clang outlive the whisper_full call.
         let rc = unsafe {

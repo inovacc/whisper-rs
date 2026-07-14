@@ -33,6 +33,9 @@ impl AudioInput {
 
     pub fn to_mono_16k(&self) -> Result<Vec<f32>> {
         let mono = self.downmix_mono();
+        if mono.is_empty() {
+            return Ok(vec![]);
+        }
         if self.sample_rate == TARGET_RATE {
             return Ok(mono);
         }

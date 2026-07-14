@@ -1,5 +1,5 @@
 # Backlog — whisper-rs
-<!-- rev:003 -->
+<!-- rev:004 -->
 
 Grounded in `docs/discovery/IDEA-BRIEF.md`, the approved design spec
 (`docs/superpowers/specs/2026-07-14-whisper-rs-design.md`), and the foundation plan
@@ -12,14 +12,17 @@ scoped as "before/after Phase N" rather than file:line references.
 - **Acquire a small test-fixture model** (`ggml-tiny.en.bin`) + a known clip (`jfk.wav` ships in
   whisper.cpp `samples/`) for the model-gated (`#[ignore]`) tests in Phases 1–2. Effort: S.
 
-## P2 — Near-term (Phase 1 execution)
-- **Wire `cargo llvm-cov`** once Task 1 lands a buildable crate — currently `N/A` (no `Cargo.toml`).
-  Effort: S.
-- **Set up CI** (GitHub Actions) building on Linux with the feature matrix
-  (`--no-default-features`, each feature alone, `--all-features`) per the plan's Task 8 check.
-  macOS/Windows validation deferred. Effort: M.
-- **Pin `ort`** to the exact pre-release rc and add a tracking note — it is pre-1.0 and an
-  API-stability risk (design spec, known limitations). Effort: S.
+## P1 — Blocker: acquire HF-gated diarization models
+- **Accept the HuggingFace licenses + download `pyannote-segmentation-3.0.onnx` and a speaker-embedding
+  `.onnx`**, place under `models/`. This is a **human step** (license acceptance) — it blocks the ONNX
+  segmentation/embedding tasks of the Phase 2 diarization plan (Tasks 3–5) and un-`#[ignore]`s their
+  tests. Also requires wiring `ort` + resolving an onnxruntime binary on the target platform. Effort: M.
+
+## P2 — Near-term
+- **Pin `ort`** to the exact pre-release rc + a tracking note when the diarization ONNX tasks land — it
+  is pre-1.0, an API-stability risk (design spec). Effort: S.
+- **macOS/Windows CI validation** — current CI (`.github/workflows/ci.yml`) builds Linux only. Extend to
+  a matrix once the FFI build is confirmed on other OSes. Effort: M.
 
 ## P3 — Deferred v1-adjacent features (design-approved, scheduled post-foundation)
 These are all part of the feature-rich v1 but land in later build-order plans (Phases 2–4):
@@ -45,16 +48,9 @@ These are all part of the feature-rich v1 but land in later build-order plans (P
 - **Raw-API escape hatch** — expose the `ffi` module (currently `#[doc(hidden)]`) under an opt-in
   feature for consumers who need unwrapped bindings, mirroring tazz4843/whisper-rs. Effort: S.
 
-## P2.5 — Foundation review follow-ups (non-blocking, from the final whole-branch review)
-- **Rename "DTW" → "token-level" timestamps** in code/commit history references — the `timestamps`
-  module uses whisper's `token_timestamps`, not DTW alignment. Optionally wire the real DTW params
-  (`dtw_token_timestamps`/`dtw_aheads`) in a later plan for higher-accuracy word times. Effort: S.
-- **Empty-input guard in `audio::resample`** — return `Ok(vec![])` for a zero-sample non-16 kHz input
-  instead of relying on rubato's `Err` (`src/audio/mod.rs`). Effort: S.
-- **`pcm.len() as i32` truncation guard** (`src/ffi/mod.rs`) — audio >~i32::MAX samples (~37 h @16 kHz)
-  wraps; add a length check (matters for the future streaming path). Effort: S.
-- **Add a `words_for_segment` special-token-filtering unit test** + a `--no-default-features` /
-  feature-matrix CI step (spec testing strategy calls for one). Effort: S.
+## P2.5 — Foundation review follow-ups — ✅ RESOLVED 2026-07-14 (see Resolved)
+Optional future refinement: wire the real DTW params (`dtw_token_timestamps`/`dtw_aheads`) for
+higher-accuracy word times than the current per-token timestamps. Effort: M.
 
 ## P6 — Prior-art-derived candidates (Handy / cjpais analysis, 2026-07-14)
 Mined from `github.com/cjpais/Handy` (Rust/Tauri whisper dictation app) + its local install. Handy uses
@@ -103,6 +99,16 @@ Full evidence + file:line citations: discovery evidence (`...\scratchpad\exec\ha
 written — the analyst lacked a Write tool; citations are in the run record / this backlog).
 
 ## Resolved
+- 2026-07-14 — **Foundation polish (`feat/foundation-polish`).** Empty-audio + i32-length guards +
+  pure `words_from_tokens` filter test (7c890d0); GitHub Actions CI with feature-matrix + clippy +
+  llvm-cov coverage (3b032223); README + canonical AGENTS.md + thin CLAUDE.md (2b3d55e). "DTW" rename
+  was a no-op (no DTW string in `src/`; only the immutable commit message).
+- 2026-07-14 — **Phase 2 diarization — model-independent slice (df7f65c).** `diarization` feature +
+  `SpeakerTurn`/`DiarizeConfig` types, pure `assign_speakers` timeline-merge, pure agglomerative
+  clustering — all tested; `--no-default-features` still builds; no `ort` yet. ONNX inference remains
+  P1-blocked on HF-gated models.
+- 2026-07-14 — **Phase 2 + Phase 3 plans written.** `docs/superpowers/plans/2026-07-14-whisper-rs-v2-diarization.md`
+  and `...-v3-streaming.md` (build-order, model-independent cores first).
 - 2026-07-14 — **Foundation (Phase 1) built & reviewed.** All 8 tasks implemented TDD, committed on
   `feat/v1-foundation` (4f6dc65..6d4fa8c); final whole-branch review READY TO MERGE (0 Critical/Important).
   Resolves the prior P1 "pin whisper.cpp submodule" (pinned v1.7.4) and "acquire test-fixture model"

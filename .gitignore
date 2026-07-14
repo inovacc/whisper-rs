@@ -2,3 +2,5 @@
 Cargo.lock
 /models/*.bin
 /models/*.onnx
+
+.superpowers/
