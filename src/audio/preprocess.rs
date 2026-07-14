@@ -1,7 +1,8 @@
 //! Tiered audio preprocessing over 16 kHz mono f32 PCM (Galle 0-4 scheme). Pure DSP.
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum PreprocessLevel {
+    #[default]
     L0,
     L1,
     L2,
