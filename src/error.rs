@@ -2,7 +2,11 @@
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ModelKind { Whisper, DiarizeSegmentation, DiarizeEmbedding }
+pub enum ModelKind {
+    Whisper,
+    DiarizeSegmentation,
+    DiarizeEmbedding,
+}
 
 impl std::fmt::Display for ModelKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

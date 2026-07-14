@@ -13,20 +13,20 @@ pub enum ModelRef {
     Download(&'static str), // resolved by the future `download` plan; errors here.
 }
 impl ModelRef {
-    pub fn path<P: AsRef<Path>>(p: P) -> ModelRef { ModelRef::Path(p.as_ref().to_path_buf()) }
-    pub fn download(id: &'static str) -> ModelRef { ModelRef::Download(id) }
+    pub fn path<P: AsRef<Path>>(p: P) -> ModelRef {
+        ModelRef::Path(p.as_ref().to_path_buf())
+    }
+    pub fn download(id: &'static str) -> ModelRef {
+        ModelRef::Download(id)
+    }
 
     fn resolve(&self) -> Result<PathBuf> {
         match self {
             ModelRef::Path(p) => Ok(p.clone()),
             #[cfg(feature = "download")]
-            ModelRef::Download(id) => {
-                crate::models::download_model(id, &crate::models::default_cache_dir())
-            }
+            ModelRef::Download(id) => crate::models::download_model(id, &crate::models::default_cache_dir()),
             #[cfg(not(feature = "download"))]
-            ModelRef::Download(_) => Err(WhisperError::Config(
-                "model download requires the `download` feature".into(),
-            )),
+            ModelRef::Download(_) => Err(WhisperError::Config("model download requires the `download` feature".into())),
         }
     }
 }
@@ -39,13 +39,24 @@ pub struct PipelineBuilder {
     preprocess: crate::audio::preprocess::PreprocessLevel,
 }
 impl PipelineBuilder {
-    pub fn whisper_model(mut self, m: ModelRef) -> Self { self.whisper_model = Some(m); self }
-    pub fn language(mut self, l: Option<String>) -> Self { self.language = l; self }
-    pub fn postprocess(mut self, cfg: PostConfig) -> Self { self.post = Some(cfg); self }
-    pub fn preprocess(mut self, level: crate::audio::preprocess::PreprocessLevel) -> Self { self.preprocess = level; self }
+    pub fn whisper_model(mut self, m: ModelRef) -> Self {
+        self.whisper_model = Some(m);
+        self
+    }
+    pub fn language(mut self, l: Option<String>) -> Self {
+        self.language = l;
+        self
+    }
+    pub fn postprocess(mut self, cfg: PostConfig) -> Self {
+        self.post = Some(cfg);
+        self
+    }
+    pub fn preprocess(mut self, level: crate::audio::preprocess::PreprocessLevel) -> Self {
+        self.preprocess = level;
+        self
+    }
     pub fn build(self) -> Result<Pipeline> {
-        let model = self.whisper_model
-            .ok_or_else(|| WhisperError::Config("whisper_model is required".into()))?;
+        let model = self.whisper_model.ok_or_else(|| WhisperError::Config("whisper_model is required".into()))?;
         let path = model.resolve()?;
         let transcriber = Transcriber::from_model_file(&path)?;
         Ok(Pipeline {
@@ -66,7 +77,9 @@ pub struct Pipeline {
 }
 
 impl Pipeline {
-    pub fn builder() -> PipelineBuilder { PipelineBuilder::default() }
+    pub fn builder() -> PipelineBuilder {
+        PipelineBuilder::default()
+    }
 
     pub fn transcribe_file<P: AsRef<Path>>(&mut self, path: P) -> Result<Transcript> {
         let pcm = AudioInput::from_wav_file(path)?.to_mono_16k()?;

@@ -2,15 +2,7 @@
 use whisper_rs::stream::{StreamPolicy, Token, TwoPass};
 
 fn toks(words: &[&str]) -> Vec<Token> {
-    words
-        .iter()
-        .enumerate()
-        .map(|(i, w)| Token {
-            text: w.to_string(),
-            start: i as f32,
-            end: i as f32 + 1.0,
-        })
-        .collect()
+    words.iter().enumerate().map(|(i, w)| Token { text: w.to_string(), start: i as f32, end: i as f32 + 1.0 }).collect()
 }
 
 #[test]

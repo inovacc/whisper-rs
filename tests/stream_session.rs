@@ -25,19 +25,15 @@ impl whisper_rs::stream::Transcribe for FakeTranscriber {
 /// Build a single-segment hypothesis from `(word, start, end)` triples (one whisper Word each).
 fn seg(words: &[(&str, f32, f32)]) -> Vec<whisper_rs::output::Segment> {
     use whisper_rs::output::{Segment, SegmentFlags, Word};
-    let ws: Vec<Word> = words
-        .iter()
-        .map(|(t, s, e)| Word { text: t.to_string(), start: *s, end: *e, confidence: 1.0 })
-        .collect();
+    let ws: Vec<Word> =
+        words.iter().map(|(t, s, e)| Word { text: t.to_string(), start: *s, end: *e, confidence: 1.0 }).collect();
     let text = words.iter().map(|(t, _, _)| *t).collect::<Vec<_>>().join(" ");
     let start = words.first().map(|(_, s, _)| *s).unwrap_or(0.0);
     let end = words.last().map(|(_, _, e)| *e).unwrap_or(0.0);
     vec![Segment { speaker: None, text, start, end, words: ws, flags: SegmentFlags::default() }]
 }
 
-fn fake_session(scripts: Vec<Vec<whisper_rs::output::Segment>>, policy_two_pass: bool)
-    -> StreamSession<FakeTranscriber>
-{
+fn fake_session(scripts: Vec<Vec<whisper_rs::output::Segment>>, policy_two_pass: bool) -> StreamSession<FakeTranscriber> {
     let fake = FakeTranscriber { scripts, i: 0 };
     if policy_two_pass {
         StreamSession::new(fake, Box::new(TwoPass::new()), AsrOptions::default())
@@ -50,9 +46,7 @@ fn committed(events: &[StreamEvent]) -> Vec<(String, f32, f32)> {
     events
         .iter()
         .filter_map(|e| match e {
-            StreamEvent::CommittedSegment { text, start, end } => {
-                Some((text.clone(), *start, *end))
-            }
+            StreamEvent::CommittedSegment { text, start, end } => Some((text.clone(), *start, *end)),
             _ => None,
         })
         .collect()
@@ -104,19 +98,13 @@ fn two_pass_poll_partial_only_finalize_commits_full() {
     // TwoPass commits nothing on poll (only PartialText); finalize() commits the whole text.
     // Regression for "TwoPass never commits through a StreamSession".
     let mut sess = fake_session(
-        vec![
-            seg(&[("hello", 0.0, 1.0), ("world", 1.0, 2.0)]),
-            seg(&[("hello", 0.0, 1.0), ("world", 1.0, 2.0)]),
-        ],
+        vec![seg(&[("hello", 0.0, 1.0), ("world", 1.0, 2.0)]), seg(&[("hello", 0.0, 1.0), ("world", 1.0, 2.0)])],
         true,
     );
     sess.push(&[0.1_f32; 16]);
     let ev = sess.poll();
     assert!(committed(&ev).is_empty(), "TwoPass poll must not commit");
-    assert!(
-        ev.iter().any(|e| matches!(e, StreamEvent::PartialText(_))),
-        "TwoPass poll must emit a PartialText"
-    );
+    assert!(ev.iter().any(|e| matches!(e, StreamEvent::PartialText(_))), "TwoPass poll must emit a PartialText");
     let cf = committed(&sess.finalize());
     assert_eq!(cf.len(), 1);
     assert_eq!(cf[0].0, "hello world");
@@ -127,10 +115,7 @@ fn committed_segment_timings_match_slice() {
     // The committed segment's (start, end) equal the first/last committed token's times.
     // Regression for Step 3 (previously used whole-buffer first/last token times).
     let mut sess = fake_session(
-        vec![
-            seg(&[("the", 0.0, 0.5), ("quick", 0.5, 1.2)]),
-            seg(&[("the", 0.0, 0.5), ("quick", 0.5, 1.2)]),
-        ],
+        vec![seg(&[("the", 0.0, 0.5), ("quick", 0.5, 1.2)]), seg(&[("the", 0.0, 0.5), ("quick", 0.5, 1.2)])],
         false,
     );
     sess.push(&[0.1_f32; 16]);
@@ -152,10 +137,7 @@ fn streams_jfk_clip_in_chunks() {
         Box::new(LocalAgreement2::new()),
         AsrOptions { language: Some("en".into()), ..Default::default() },
     );
-    let pcm = whisper_rs::audio::AudioInput::from_wav_file("tests/fixtures/jfk.wav")
-        .unwrap()
-        .to_mono_16k()
-        .unwrap();
+    let pcm = whisper_rs::audio::AudioInput::from_wav_file("tests/fixtures/jfk.wav").unwrap().to_mono_16k().unwrap();
     // feed in ~0.5s chunks, polling as we go
     let chunk = 8000;
     let mut committed = String::new();

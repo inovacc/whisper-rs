@@ -1,6 +1,6 @@
 //! Synchronous streaming session over a [`Transcriber`]: push audio, poll for events.
-use crate::asr::{AsrOptions, Transcriber};
 use super::{StreamEvent, StreamPolicy, Token, Transcribe};
+use crate::asr::{AsrOptions, Transcriber};
 
 /// Synchronous streaming session: push 16 kHz mono f32 frames, poll for events.
 /// Re-decodes the whole accumulated buffer each poll (simple LocalAgreement-friendly approach);
@@ -67,26 +67,17 @@ impl<T: Transcribe> StreamSession<T> {
             .filter(|t| !t.text.is_empty())
             .collect();
 
-        let committed = if final_pass {
-            self.policy.observe_final(&tokens)
-        } else {
-            self.policy.observe(&tokens)
-        };
+        let committed = if final_pass { self.policy.observe_final(&tokens) } else { self.policy.observe(&tokens) };
         let mut events = Vec::new();
         if !committed.text.trim().is_empty() {
             // Time the event from the committed token slice, clamping to the hypothesis length.
-            let (start, end) = if committed.committed_upto > committed.committed_from
-                && committed.committed_upto <= tokens.len()
-            {
-                (tokens[committed.committed_from].start, tokens[committed.committed_upto - 1].end)
-            } else {
-                (0.0, 0.0)
-            };
-            events.push(StreamEvent::CommittedSegment {
-                text: committed.text.trim().to_string(),
-                start,
-                end,
-            });
+            let (start, end) =
+                if committed.committed_upto > committed.committed_from && committed.committed_upto <= tokens.len() {
+                    (tokens[committed.committed_from].start, tokens[committed.committed_upto - 1].end)
+                } else {
+                    (0.0, 0.0)
+                };
+            events.push(StreamEvent::CommittedSegment { text: committed.text.trim().to_string(), start, end });
         }
         // Partial = the full current hypothesis text (tentative view).
         let partial: String = super::join_tokens(&tokens);

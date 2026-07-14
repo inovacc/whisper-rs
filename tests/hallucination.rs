@@ -1,15 +1,8 @@
-use whisper_rs::postprocess::hallucination::{apply_flags, flag_hallucinations, text_similarity};
 use whisper_rs::output::{Segment, SegmentFlags};
+use whisper_rs::postprocess::hallucination::{apply_flags, flag_hallucinations, text_similarity};
 
 fn seg(text: &str, s: f32, e: f32) -> Segment {
-    Segment {
-        speaker: None,
-        text: text.into(),
-        start: s,
-        end: e,
-        words: vec![],
-        flags: SegmentFlags::default(),
-    }
+    Segment { speaker: None, text: text.into(), start: s, end: e, words: vec![], flags: SegmentFlags::default() }
 }
 
 #[test]

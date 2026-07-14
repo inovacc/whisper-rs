@@ -77,8 +77,7 @@ impl AudioInput {
         // probe instance (it only depends on the interpolator/ratio, not on any processed
         // data) and use it below to size a trailing zero-pad that supplies the resampler with
         // enough lookahead to emit its true tail instead of truncating it.
-        let probe = SincFixedIn::<f32>::new(ratio, 2.0, params(), 1, 1)
-            .map_err(|e| WhisperError::Resample(e.to_string()))?;
+        let probe = SincFixedIn::<f32>::new(ratio, 2.0, params(), 1, 1).map_err(|e| WhisperError::Resample(e.to_string()))?;
         let delay = probe.output_delay();
         drop(probe);
 

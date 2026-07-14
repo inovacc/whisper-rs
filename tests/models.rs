@@ -5,22 +5,13 @@ use whisper_rs::models::{cached_path, default_cache_dir, download_model, model_u
 
 #[test]
 fn url_and_path_are_correct() {
-    assert_eq!(
-        model_url("tiny.en"),
-        "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin"
-    );
-    assert_eq!(
-        cached_path("base", Path::new("models")).unwrap(),
-        Path::new("models/ggml-base.bin")
-    );
+    assert_eq!(model_url("tiny.en"), "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin");
+    assert_eq!(cached_path("base", Path::new("models")).unwrap(), Path::new("models/ggml-base.bin"));
 }
 
 #[test]
 fn accepts_valid_id() {
-    assert_eq!(
-        cached_path("tiny.en", Path::new("models")).unwrap(),
-        Path::new("models/ggml-tiny.en.bin")
-    );
+    assert_eq!(cached_path("tiny.en", Path::new("models")).unwrap(), Path::new("models/ggml-tiny.en.bin"));
 }
 
 #[test]

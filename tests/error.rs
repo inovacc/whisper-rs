@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use whisper_rs::{WhisperError, error::ModelKind};
+use whisper_rs::{error::ModelKind, WhisperError};
 
 #[test]
 fn model_not_found_displays_path_and_kind() {

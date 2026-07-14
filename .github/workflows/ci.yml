@@ -32,6 +32,9 @@ jobs:
         with:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
+      - name: Format check
+        if: runner.os == 'Linux'
+        run: cargo fmt --all -- --check
       - name: Build (default features)
         run: cargo build --verbose
       - name: Clippy
@@ -59,3 +62,26 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Coverage (excludes ignored model-gated tests)
         run: cargo llvm-cov --summary-only
+
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@cargo-audit
+      - name: Audit dependencies
+        run: cargo audit
+
+  msrv:
+    name: msrv (1.75)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install libclang + clang
+        run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
+      - uses: dtolnay/rust-toolchain@1.75
+      - uses: Swatinem/rust-cache@v2
+      - name: Build (MSRV 1.75)
+        run: cargo build --verbose
