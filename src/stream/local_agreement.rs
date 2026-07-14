@@ -13,47 +13,29 @@ pub struct LocalAgreement2 {
 
 impl LocalAgreement2 {
     pub fn new() -> Self {
-        Self {
-            previous: None,
-            committed_upto: 0,
-        }
+        Self { previous: None, committed_upto: 0 }
     }
 }
 
 /// Length of the common prefix of `a` and `b`, comparing tokens by `text`.
 fn common_prefix_len(a: &[Token], b: &[Token]) -> usize {
-    a.iter()
-        .zip(b.iter())
-        .take_while(|(x, y)| x.text == y.text)
-        .count()
+    a.iter().zip(b.iter()).take_while(|(x, y)| x.text == y.text).count()
 }
 
 impl StreamPolicy for LocalAgreement2 {
     fn observe(&mut self, hypothesis: &[Token]) -> Committed {
         let from = self.committed_upto;
         let result = match &self.previous {
-            None => Committed {
-                text: String::new(),
-                committed_upto: self.committed_upto,
-                committed_from: from,
-            },
+            None => Committed { text: String::new(), committed_upto: self.committed_upto, committed_from: from },
             Some(previous) => {
                 let common = common_prefix_len(previous, hypothesis);
                 if common > self.committed_upto {
                     let newly = &hypothesis[self.committed_upto..common];
                     let text = super::join_tokens(newly);
                     self.committed_upto = common;
-                    Committed {
-                        text,
-                        committed_upto: self.committed_upto,
-                        committed_from: from,
-                    }
+                    Committed { text, committed_upto: self.committed_upto, committed_from: from }
                 } else {
-                    Committed {
-                        text: String::new(),
-                        committed_upto: self.committed_upto,
-                        committed_from: from,
-                    }
+                    Committed { text: String::new(), committed_upto: self.committed_upto, committed_from: from }
                 }
             }
         };
@@ -65,18 +47,10 @@ impl StreamPolicy for LocalAgreement2 {
     /// re-committing after the cursor has reached the end yields empty text.
     fn observe_final(&mut self, hypothesis: &[Token]) -> Committed {
         let from = self.committed_upto;
-        let newly = if hypothesis.len() > self.committed_upto {
-            &hypothesis[self.committed_upto..]
-        } else {
-            &[]
-        };
+        let newly = if hypothesis.len() > self.committed_upto { &hypothesis[self.committed_upto..] } else { &[] };
         let text = super::join_tokens(newly);
         self.committed_upto = hypothesis.len().max(self.committed_upto);
         self.previous = Some(hypothesis.to_vec());
-        Committed {
-            text,
-            committed_upto: self.committed_upto,
-            committed_from: from,
-        }
+        Committed { text, committed_upto: self.committed_upto, committed_from: from }
     }
 }

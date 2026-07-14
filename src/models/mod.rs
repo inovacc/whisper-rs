@@ -17,10 +17,7 @@ fn validate_id(id: &str) -> Result<()> {
     if id.contains('/') || id.contains('\\') || id.contains("..") || id.starts_with('.') {
         return Err(invalid());
     }
-    if !id
-        .chars()
-        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '.' | '_' | '-'))
-    {
+    if !id.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || matches!(c, '.' | '_' | '-')) {
         return Err(invalid());
     }
     Ok(())
@@ -50,12 +47,8 @@ pub fn download_model(id: &str, cache_dir: &Path) -> Result<PathBuf> {
     }
     std::fs::create_dir_all(cache_dir)?;
     let url = model_url(id);
-    let resp = ureq::get(&url)
-        .call()
-        .map_err(|e| WhisperError::ModelDownload(format!("GET {url}: {e}")))?;
-    let expected_len: Option<u64> = resp
-        .header("Content-Length")
-        .and_then(|v| v.parse::<u64>().ok());
+    let resp = ureq::get(&url).call().map_err(|e| WhisperError::ModelDownload(format!("GET {url}: {e}")))?;
+    let expected_len: Option<u64> = resp.header("Content-Length").and_then(|v| v.parse::<u64>().ok());
     let mut reader = resp.into_reader();
     // Download to a temp file then rename (atomic-ish) so a partial download isn't mistaken for complete.
     let tmp = dest.with_extension("bin.part");
@@ -66,9 +59,7 @@ pub fn download_model(id: &str, cache_dir: &Path) -> Result<PathBuf> {
     if let Some(expected) = expected_len {
         if copied != expected {
             let _ = std::fs::remove_file(&tmp);
-            return Err(WhisperError::ModelDownload(format!(
-                "truncated download: expected {expected} bytes, got {copied}"
-            )));
+            return Err(WhisperError::ModelDownload(format!("truncated download: expected {expected} bytes, got {copied}")));
         }
     }
     std::fs::rename(&tmp, &dest)?;
@@ -81,15 +72,9 @@ pub fn download_model(id: &str, cache_dir: &Path) -> Result<PathBuf> {
 /// SHA-256 verification is not yet wired up (it would require adding a new dependency, which is a
 /// maintainer decision — see plan 005); passing `Some(_)` returns `WhisperError::Config` rather
 /// than silently skipping the check. Passing `None` behaves exactly like [`download_model`].
-pub fn download_model_verified(
-    id: &str,
-    cache_dir: &Path,
-    expected_sha256: Option<&str>,
-) -> Result<PathBuf> {
+pub fn download_model_verified(id: &str, cache_dir: &Path, expected_sha256: Option<&str>) -> Result<PathBuf> {
     if expected_sha256.is_some() {
-        return Err(WhisperError::Config(
-            "sha verification not yet wired — see plan 005".into(),
-        ));
+        return Err(WhisperError::Config("sha verification not yet wired — see plan 005".into()));
     }
     download_model(id, cache_dir)
 }

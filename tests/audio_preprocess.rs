@@ -27,8 +27,8 @@ fn l3_gates_low_amplitude_noise() {
 #[test]
 fn all_levels_stay_in_range() {
     let x: Vec<f32> = (0..100).map(|i| ((i as f32) * 0.3).sin() * 2.0).collect(); // out-of-range input
-    // L0 is documented identity (passes input through verbatim), so it is intentionally excluded
-    // from this range assertion.
+                                                                                  // L0 is documented identity (passes input through verbatim), so it is intentionally excluded
+                                                                                  // from this range assertion.
     for lvl in [PreprocessLevel::L1, PreprocessLevel::L2, PreprocessLevel::L3, PreprocessLevel::L4] {
         assert!(preprocess(&x, lvl).iter().all(|s| s.abs() <= 1.0001), "{lvl:?} out of range");
     }

@@ -174,24 +174,14 @@ pub struct PostConfig {
 
 impl Default for PostConfig {
     fn default() -> Self {
-        Self {
-            normalize_numbers: false,
-            collapse_repeats: false,
-            remove_fillers: false,
-            language: "en".into(),
-        }
+        Self { normalize_numbers: false, collapse_repeats: false, remove_fillers: false, language: "en".into() }
     }
 }
 
 impl PostConfig {
     /// Enable the common set (numbers + repeats + fillers) for a language.
     pub fn all(language: impl Into<String>) -> Self {
-        Self {
-            normalize_numbers: true,
-            collapse_repeats: true,
-            remove_fillers: true,
-            language: language.into(),
-        }
+        Self { normalize_numbers: true, collapse_repeats: true, remove_fillers: true, language: language.into() }
     }
 
     /// Apply the enabled transforms to a single text string (order: fillers -> repeats -> numbers).

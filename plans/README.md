@@ -15,7 +15,7 @@ conditions, and update your row when done. Plans were vetted against the live co
 | 005 | Harden the model downloader (traversal, checksum, truncation) | P1 | M | — | DONE |
 | 006 | Speed up agglomerative clustering (O(n³)→O(n²)) | P2 | M | — | DONE |
 | 007 | Flush resampler delay so timestamps stay aligned | P2 | M | — | DONE |
-| 008 | Add CI gates: fmt check, cargo-audit, MSRV leg | P2 | S | — | TODO |
+| 008 | Add CI gates: fmt check, cargo-audit, MSRV leg | P2 | S | — | DONE |
 | 009 | Close test-coverage gaps (float WAV, downloader, cfg branch) | P3 | S | 001, 005 | DONE |
 | 010 | Cleanups (in-place preprocess, token-join, cache dir, doc note) | P3 | S | — | DONE |
 

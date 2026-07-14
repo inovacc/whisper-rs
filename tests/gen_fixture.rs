@@ -1,12 +1,7 @@
 #[test]
 #[ignore = "run once to (re)generate the fixture"]
 fn generate_sine_fixture() {
-    let spec = hound::WavSpec {
-        channels: 2,
-        sample_rate: 8000,
-        bits_per_sample: 16,
-        sample_format: hound::SampleFormat::Int,
-    };
+    let spec = hound::WavSpec { channels: 2, sample_rate: 8000, bits_per_sample: 16, sample_format: hound::SampleFormat::Int };
     std::fs::create_dir_all("tests/fixtures").unwrap();
     let mut w = hound::WavWriter::create("tests/fixtures/sine_8k_stereo.wav", spec).unwrap();
     for n in 0..8000 {
@@ -21,12 +16,8 @@ fn generate_sine_fixture() {
 #[test]
 #[ignore = "run once to (re)generate the fixture"]
 fn generate_sine_f32_fixture() {
-    let spec = hound::WavSpec {
-        channels: 1,
-        sample_rate: 16000,
-        bits_per_sample: 32,
-        sample_format: hound::SampleFormat::Float,
-    };
+    let spec =
+        hound::WavSpec { channels: 1, sample_rate: 16000, bits_per_sample: 32, sample_format: hound::SampleFormat::Float };
     std::fs::create_dir_all("tests/fixtures").unwrap();
     let mut w = hound::WavWriter::create("tests/fixtures/sine_f32_16k.wav", spec).unwrap();
     for n in 0..16000 {

@@ -13,9 +13,6 @@ fn postconfig_apply_runs_enabled_transforms() {
 #[test]
 fn builder_accepts_postprocess() {
     // build() will fail on missing model, but the postprocess() method must exist and chain.
-    let err = Pipeline::builder()
-        .postprocess(PostConfig::all("en"))
-        .whisper_model(ModelRef::path("nope.bin"))
-        .build();
+    let err = Pipeline::builder().postprocess(PostConfig::all("en")).whisper_model(ModelRef::path("nope.bin")).build();
     assert!(err.is_err()); // model missing -> error; the point is postprocess() compiles + chains
 }

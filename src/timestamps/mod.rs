@@ -26,12 +26,7 @@ pub fn words_from_tokens(tokens: Vec<(String, i64, i64, f32)>) -> Vec<Word> {
         if trimmed.is_empty() || trimmed.starts_with('[') || trimmed.starts_with("<|") {
             continue;
         }
-        words.push(Word {
-            text: trimmed.to_string(),
-            start: t0_cs as f32 / 100.0,
-            end: t1_cs as f32 / 100.0,
-            confidence: p,
-        });
+        words.push(Word { text: trimmed.to_string(), start: t0_cs as f32 / 100.0, end: t1_cs as f32 / 100.0, confidence: p });
     }
     enforce_monotonic(words)
 }

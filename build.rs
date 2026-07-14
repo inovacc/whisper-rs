@@ -69,12 +69,8 @@ fn main() {
         bindgen_builder = bindgen_builder.clang_arg("-fms-compatibility");
     }
 
-    let bindings = bindgen_builder
-        .generate()
-        .expect("bindgen failed to generate whisper.cpp bindings");
+    let bindings = bindgen_builder.generate().expect("bindgen failed to generate whisper.cpp bindings");
 
     let out = PathBuf::from(env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out.join("bindings.rs"))
-        .expect("write bindings.rs");
+    bindings.write_to_file(out.join("bindings.rs")).expect("write bindings.rs");
 }

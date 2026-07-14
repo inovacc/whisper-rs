@@ -12,7 +12,8 @@ fn transcribe_file_returns_timestamped_transcript() {
     let mut p = Pipeline::builder()
         .whisper_model(ModelRef::path("models/ggml-tiny.en.bin"))
         .language(Some("en".into()))
-        .build().unwrap();
+        .build()
+        .unwrap();
     let t = p.transcribe_file("tests/fixtures/jfk.wav").unwrap();
     assert!(!t.segments.is_empty());
     assert!(t.plain_text().to_lowercase().contains("country"));

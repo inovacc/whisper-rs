@@ -44,11 +44,7 @@ pub trait StreamPolicy {
 /// Abstraction over a transcriber so streaming sessions can be unit-tested with a fake
 /// (the concrete [`crate::asr::Transcriber`] needs a real model).
 pub trait Transcribe {
-    fn transcribe(
-        &mut self,
-        pcm: &[f32],
-        opts: &crate::asr::AsrOptions,
-    ) -> crate::error::Result<Vec<crate::output::Segment>>;
+    fn transcribe(&mut self, pcm: &[f32], opts: &crate::asr::AsrOptions) -> crate::error::Result<Vec<crate::output::Segment>>;
 }
 
 /// Join token texts with a single space, without the throwaway intermediate `Vec` that

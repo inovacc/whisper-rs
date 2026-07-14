@@ -17,8 +17,7 @@ fn resample_preserves_temporal_alignment() {
     // resampler's delay line isn't drained, the whole signal shifts earlier (and the tail is
     // clipped) — this test asserts the step lands at approximately the same relative time
     // after resampling to 16 kHz, i.e. at ~2x its original sample index.
-    let spec =
-        hound::WavSpec { channels: 1, sample_rate: 8000, bits_per_sample: 16, sample_format: hound::SampleFormat::Int };
+    let spec = hound::WavSpec { channels: 1, sample_rate: 8000, bits_per_sample: 16, sample_format: hound::SampleFormat::Int };
     let path = std::env::temp_dir().join("whisper_rs_step.wav");
     let step_at = 4000usize; // 0.5 s into the clip
     {
@@ -49,12 +48,7 @@ fn resample_preserves_temporal_alignment() {
 #[test]
 fn empty_input_returns_empty() {
     // Build an AudioInput with zero samples at a non-16k rate via a tiny silent WAV.
-    let spec = hound::WavSpec {
-        channels: 1,
-        sample_rate: 8000,
-        bits_per_sample: 16,
-        sample_format: hound::SampleFormat::Int,
-    };
+    let spec = hound::WavSpec { channels: 1, sample_rate: 8000, bits_per_sample: 16, sample_format: hound::SampleFormat::Int };
     let path = std::env::temp_dir().join("whisper_rs_empty.wav");
     {
         let w = hound::WavWriter::create(&path, spec).unwrap();

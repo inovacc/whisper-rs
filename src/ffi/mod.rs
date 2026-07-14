@@ -29,8 +29,8 @@ unsafe impl Send for Context {}
 
 impl Context {
     pub fn from_file(path: &Path) -> crate::error::Result<Context> {
-        let c = CString::new(path.to_string_lossy().as_bytes())
-            .map_err(|e| crate::error::WhisperError::Config(e.to_string()))?;
+        let c =
+            CString::new(path.to_string_lossy().as_bytes()).map_err(|e| crate::error::WhisperError::Config(e.to_string()))?;
         // SAFETY: default params; c is a valid NUL-terminated path for the call's duration.
         let ctx = unsafe {
             let params = whisper_context_default_params();
@@ -46,18 +46,9 @@ impl Context {
     }
 
     /// Run full transcription. Returns Ok(()) on success, Err(Ffi(code)) on non-zero return.
-    pub fn full(
-        &mut self,
-        lang: &str,
-        threads: i32,
-        token_timestamps: bool,
-        pcm: &[f32],
-    ) -> crate::error::Result<()> {
+    pub fn full(&mut self, lang: &str, threads: i32, token_timestamps: bool, pcm: &[f32]) -> crate::error::Result<()> {
         if pcm.len() > i32::MAX as usize {
-            return Err(crate::error::WhisperError::Config(format!(
-                "audio too long: {} samples exceeds i32::MAX",
-                pcm.len()
-            )));
+            return Err(crate::error::WhisperError::Config(format!("audio too long: {} samples exceeds i32::MAX", pcm.len())));
         }
         let clang = CString::new(lang).map_err(|e| crate::error::WhisperError::Config(e.to_string()))?;
         // SAFETY: pcm and clang outlive the whisper_full call.
