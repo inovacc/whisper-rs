@@ -1,0 +1,45 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install libclang + clang (for bindgen)
+        run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Build (default features)
+        run: cargo build --verbose
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Test (default features)
+        run: cargo test --verbose
+      - name: Build --no-default-features
+        run: cargo build --no-default-features --verbose
+      - name: Build --all-features
+        run: cargo build --all-features --verbose
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install libclang + clang
+        run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Coverage (excludes ignored model-gated tests)
+        run: cargo llvm-cov --summary-only
