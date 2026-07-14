@@ -1,0 +1,19 @@
+https://github.com/optiummusic/Whisper-Real-Time-Transcription
+https://codeberg.org/tazz4843/whisper-rs
+https://github.com/ggml-org/whisper.cpp
+https://github.com/Gadersd/whisper-burn
+https://github.com/ayakashi-labs/yamabiko-whisper
+
+https://github.com/MahmoudAshraf97/whisper-diarization
+https://github.com/m-bain/whisperx
+https://community.openai.com/t/best-solution-for-whisper-diarization-speaker-labeling/505922
+https://huggingface.co/onnx-community/pyannote-segmentation-3.0
+https://huggingface.co/onnx-community/whisper-base_timestamped
+https://replicate.com/rafaelgalle/whisper-diarization-advanced
+https://github.com/rafaelgalle/whisper-diarization-advanced
+https://medium.com/htx-dsai/beyond-speech-to-text-towards-more-robust-and-informative-asr-by-increasing-transcription-08f8f2eee9e9
+
+
+
+
+read those repos and list those features, i want to create a dyammarcano/whisper-rs that use whisper.cpp and a glue layer on rust to create a feature enrich crate, so can be used in other projects
