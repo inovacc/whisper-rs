@@ -1,5 +1,5 @@
 # AGENTS.md
-<!-- rev:001 -->
+<!-- rev:002 -->
 
 Canonical cross-tool agent instructions for `whisper-rs`. `CLAUDE.md` imports this file — edit here,
 not there.
@@ -7,8 +7,10 @@ not there.
 ## Overview
 
 `whisper-rs` is a safe Rust wrapper over whisper.cpp for local, offline speech-to-text. Today it
-ships batch ASR + word timestamps + a high-level `Pipeline`; diarization/streaming/download are
-feature-flagged stubs (see `docs/ROADMAP.md`).
+ships batch ASR + word timestamps + a high-level `Pipeline`, post-processing, audio preprocessing, a
+real HTTPS model downloader, and the pure/core slices of diarization and streaming. Model-backed
+diarization inference and a Silero ONNX VAD upgrade remain blocked on HuggingFace-gated models (see
+`docs/ROADMAP.md`).
 
 ## Build / test commands
 
@@ -30,10 +32,13 @@ accordingly.
 
 ## Feature flags
 
-`default = ["diarization", "streaming", "download"]` in `Cargo.toml`. All three are currently
-**empty stubs** — the flags exist so downstream code can gate on them now, but no behavior lands
-until their respective phases (see `docs/ROADMAP.md`). Do not advertise diarization, streaming, or
-model-downloading as working; `ModelRef::download(...)` always returns `WhisperError::Config` today.
+`default = ["diarization", "streaming", "download"]` in `Cargo.toml`. `download` is fully working
+(`ModelRef::download(id)` fetches + caches a GGML model over HTTPS via `ureq`). `diarization` and
+`streaming` ship their pure/core logic (types, timeline merge, clustering, `StreamPolicy`,
+`StreamSession`) but model-backed diarization inference isn't wired into `Pipeline` yet — it's
+blocked on HuggingFace-gated ONNX models (see `docs/ROADMAP.md`). Don't advertise model-backed
+diarization as working; do treat the downloader and the pure diarization/streaming core as real,
+shipped behavior.
 
 ## Code style
 
@@ -53,9 +58,9 @@ model-downloading as working; `ModelRef::download(...)` always returns `WhisperE
 
 - Fast/unit tests run under plain `cargo test` — no model or audio fixture required.
 - Any test that needs a real GGML model or transcribes real audio is `#[ignore]`d
-  (`tests/asr.rs`, `tests/pipeline.rs`, `tests/ffi_smoke.rs`). Run them explicitly with
-  `cargo test -- --ignored` after placing a model at `models/ggml-tiny.en.bin`. Fixture WAVs live
-  under `tests/fixtures/`.
+  (`tests/asr.rs`, `tests/pipeline.rs`). Run them explicitly with `cargo test -- --ignored` after
+  placing a model at `models/ggml-tiny.en.bin`. Fixture WAVs live under `tests/fixtures/`.
+  `tests/ffi_smoke.rs` is NOT ignored — it links against whisper.cpp and runs by default.
 - New behavior in the safe layers (`audio`, `asr`, `timestamps`, `output`, `pipeline`) needs a
   non-ignored unit test where possible; only FFI/model-dependent behavior should be `#[ignore]`d.
 
@@ -65,14 +70,21 @@ Layered, safe-by-construction API:
 
 ```
 src/
-  ffi/         unsafe whisper.cpp bindings + RAII Context (the ONLY unsafe module)
-  audio/       WAV decode, downmix, 16 kHz resample (rubato)
-  asr/         Transcriber: safe wrapper calling ffi::Context, produces Segment/Word
-  timestamps/  word-timestamp extraction from raw tokens + monotonicity enforcement
-  output.rs    Transcript / Segment / Word / SegmentFlags — structured output types
-  pipeline.rs  high-level Pipeline: composes audio -> asr -> output for one-call transcription
-  prelude.rs   convenience re-exports for consumers
-  error.rs     crate-wide WhisperError + Result
+  ffi/               unsafe whisper.cpp bindings + RAII Context (the ONLY unsafe module)
+  audio/             WAV decode, downmix, 16 kHz resample (rubato)
+    preprocess.rs    preprocessing levels 0-4 (Galle scheme): DC removal, peak normalize, noise gate
+    vad.rs           pure energy-based VAD (VadConfig, segment) — Silero ONNX upgrade planned
+  asr/               Transcriber: safe wrapper calling ffi::Context, produces Segment/Word
+  timestamps/        word-timestamp extraction from raw tokens + monotonicity enforcement
+  diarize/           SpeakerTurn/DiarizeConfig types, timeline merge, agglomerative clustering
+                      (pure/tested core; ONNX-model-backed inference is blocked — see ROADMAP)
+  stream/            StreamPolicy (LocalAgreement2, TwoPass) + StreamSession (push/poll/finalize)
+  models/            ModelRef::download cache + resolution behind feature = "download" (ureq)
+  postprocess/       normalize_numbers, collapse_repeats, remove_fillers, PostConfig, hallucination
+  output.rs          Transcript / Segment / Word / SegmentFlags — structured output types
+  pipeline.rs        high-level Pipeline: composes audio -> asr -> output for one-call transcription
+  prelude.rs         convenience re-exports for consumers
+  error.rs           crate-wide WhisperError + Result
 ```
 
 `build.rs` compiles `vendor/whisper.cpp` (git submodule, pinned v1.7.4 — core + ggml CPU backend)
@@ -83,9 +95,10 @@ via `cc`, then runs `bindgen` over `wrapper.h` to generate `OUT_DIR/bindings.rs`
 
 - No bundled models, no bundled audio beyond test fixtures — models are always consumer-supplied by
   path today.
-- No secrets, no network calls in the current codebase (the `download` feature is a stub — when
-  implemented it will be the first thing that talks to the network; treat that as a hardening
-  checkpoint, not an afterthought).
+- No secrets. The `download` feature (default-on) makes real outbound HTTPS calls via
+  `ureq::get(...)` in `src/models/mod.rs` — it is a genuine network attack surface (URL
+  construction, response handling, cache-path writes) and should be treated as a hardening
+  checkpoint, not an afterthought (see plan 005).
 
 ## Commit conventions
 

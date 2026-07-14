@@ -1,5 +1,5 @@
 # Known Issues & Limitations — whisper-rs
-<!-- rev:001 -->
+<!-- rev:002 -->
 
 Tracks known limitations, caveats, and external blockers. For planned work see `docs/ROADMAP.md`;
 for prioritized follow-ups see `docs/BACKLOG.md`.
@@ -35,8 +35,9 @@ for prioritized follow-ups see `docs/BACKLOG.md`.
 - **Build requires `libclang`** (for `bindgen`) + a C/C++ toolchain; on Windows also MSVC Build Tools.
   The whisper.cpp submodule must be initialized (`git submodule update --init --recursive`). See
   `README.md` / `AGENTS.md`.
-- **CI currently builds Linux only** (`.github/workflows/ci.yml`). macOS/Windows matrix validation is a
-  backlog item (BACKLOG P2).
 
 ## Resolved
-_(none yet)_
+
+- **2026-07-14 — CI now builds a 3-OS matrix.** `.github/workflows/ci.yml` runs
+  `[ubuntu-latest, macos-latest, windows-latest]`; the prior single-OS build limitation no longer
+  applies.

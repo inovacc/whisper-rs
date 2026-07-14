@@ -1,15 +1,19 @@
 # whisper-rs
-<!-- rev:001 -->
+<!-- rev:002 -->
 
 A feature-rich, safe Rust wrapper over [whisper.cpp](https://github.com/ggml-org/whisper.cpp) — local, offline speech-to-text with word-level timestamps.
 
 ## Status
 
-**Foundation.** What ships today: batch ASR over a WAV file, word-level timestamps with monotonic
-enforcement, and a high-level `Pipeline`. **Diarization, streaming, audio-preprocessing polish, and
-a model downloader are planned but not implemented** — their feature flags exist and are wired into
-`Cargo.toml`, but the code behind them is empty stubs (or, for the downloader, an explicit
-`WhisperError::Config` error). See `docs/ROADMAP.md` for the phased build order.
+**Beyond foundation.** What ships today: batch ASR over a WAV file, word-level timestamps with
+monotonic enforcement, a high-level `Pipeline`, post-processing (number normalization, repeat
+collapse, filler removal, hallucination flagging), audio preprocessing (levels 0–4 + energy VAD),
+a real HTTPS model downloader, and the pure/core slices of diarization (types, timeline merge,
+agglomerative clustering) and streaming (`LocalAgreement2`/`TwoPass` policies, `StreamSession`).
+**Still blocked:** ONNX-model-backed diarization inference (`pyannote-segmentation-3.0` + speaker
+embeddings) and a Silero ONNX VAD upgrade — both need HuggingFace-gated models a maintainer must
+accept and place under `models/`. See `docs/ROADMAP.md` for the phased build order and exact status
+per phase.
 
 This crate is **local use only**: `publish = false` in `Cargo.toml`, not published to crates.io.
 
@@ -22,12 +26,31 @@ Works today:
   (`timestamps::words_from_tokens`, `timestamps::enforce_monotonic`).
 - A high-level `Pipeline` that composes decode → resample → transcribe into one call.
 - Structured output types (`Transcript`, `Segment`, `Word`) with a `plain_text()` convenience.
+- `download` — `ModelRef::download(id)` fetches a GGML model over HTTPS via `ureq` and caches it
+  locally (behind `feature = "download"`, enabled by default).
+- `diarization` (core) — `SpeakerTurn`/`DiarizeConfig` types, `merge(words, turns)` timeline join,
+  and agglomerative speaker clustering — all pure and tested. Model-backed inference is not wired
+  into `Pipeline` yet (blocked on gated ONNX models).
+- `streaming` (core) — `StreamPolicy` (`LocalAgreement2`, `TwoPass`) and a synchronous
+  `StreamSession` (push/poll/finalize) plus `Pipeline::into_stream`. VAD-boundary incremental
+  decoding and a worker-thread/mic-capture variant are still planned.
 
-Planned, not yet implemented (feature-flagged, empty today):
-- `diarization` — speaker attribution (`Segment::speaker` exists in the type but is always `None`).
-- `streaming` — incremental/live transcription.
-- `download` — `ModelRef::download(...)` currently always returns `WhisperError::Config`; models
-  must be supplied by local path.
+### Post-processing & preprocessing
+
+- `postprocess::normalize_numbers`, `postprocess::collapse_repeats`, `postprocess::remove_fillers`,
+  `postprocess::PostConfig` — text-level cleanup, wired into `Pipeline`.
+- `postprocess::hallucination` — cross-pass comparison heuristic + `apply_flags`.
+- `audio::preprocess::{preprocess, remove_dc, normalize_peak, noise_gate}` with `PreprocessLevel`
+  (levels 0–4, the Galle scheme) — wired into `Pipeline`.
+- `audio::vad::segment` — pure energy-based VAD (`VadConfig`). A Silero ONNX upgrade is planned but
+  blocked on a gated model.
+
+### Still blocked (needs HuggingFace-gated ONNX models)
+
+- Diarization's `ort` + `pyannote-segmentation-3.0` segmentation inference and speaker-embedding
+  inference — the pure clustering/merge core above works today, but `Pipeline::diarization(cfg)`
+  isn't wired up until this lands.
+- Silero ONNX VAD upgrade (shares the diarization `ort` dependency).
 
 ## Build requirements
 
@@ -101,17 +124,17 @@ fn main() -> whisper_rs::Result<()> {
 
 ## Models
 
-Models are **bring-your-own** — this crate does not bundle or download them today. Get a GGML model
-from whisper.cpp's own tooling, e.g.:
+Models are **not bundled** — get a GGML model either via whisper.cpp's own tooling:
 
 ```powershell
 # from a whisper.cpp checkout
 ./models/download-ggml-model.sh tiny.en
 ```
 
-Then point `ModelRef::path(...)` (or `Transcriber::from_model_file(...)`) at the resulting
-`ggml-*.bin` file. `ModelRef::download(...)` exists in the API surface but currently always returns
-`WhisperError::Config` — automatic downloading is a later phase.
+and point `ModelRef::path(...)` (or `Transcriber::from_model_file(...)`) at the resulting
+`ggml-*.bin` file; or, with `feature = "download"` (default), call `ModelRef::download(id)` to fetch
+and cache a GGML model over HTTPS via `ureq` directly. Without the `download` feature enabled,
+`ModelRef::download(...)` returns `WhisperError::Config`.
 
 ## Audio input
 
