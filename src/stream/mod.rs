@@ -51,6 +51,19 @@ pub trait Transcribe {
     ) -> crate::error::Result<Vec<crate::output::Segment>>;
 }
 
+/// Join token texts with a single space, without the throwaway intermediate `Vec` that
+/// `.map(...).collect::<Vec<_>>().join(" ")` would allocate.
+pub(crate) fn join_tokens(tokens: &[Token]) -> String {
+    let mut out = String::new();
+    for (i, t) in tokens.iter().enumerate() {
+        if i > 0 {
+            out.push(' ');
+        }
+        out.push_str(&t.text);
+    }
+    out
+}
+
 pub mod local_agreement;
 pub mod session;
 pub mod two_pass;

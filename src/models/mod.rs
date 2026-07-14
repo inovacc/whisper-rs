@@ -94,7 +94,27 @@ pub fn download_model_verified(
     download_model(id, cache_dir)
 }
 
-/// Default cache dir: `./models` under the current working dir.
+/// Default cache dir for downloaded models.
+///
+/// Resolution order (first that yields a value wins):
+/// 1. `WHISPER_RS_CACHE_DIR` env var, used verbatim.
+/// 2. A per-user cache dir joined with `whisper-rs/models`: `LOCALAPPDATA` (Windows),
+///    `XDG_CACHE_HOME`, or `HOME/.cache` (Unix-like), in that order.
+/// 3. `./models` under the current working directory, if none of the above resolve.
+///
+/// This intentionally avoids a new dependency (e.g. `dirs`) — see plan 010.
 pub fn default_cache_dir() -> PathBuf {
+    if let Some(dir) = std::env::var_os("WHISPER_RS_CACHE_DIR") {
+        return PathBuf::from(dir);
+    }
+    if let Some(dir) = std::env::var_os("LOCALAPPDATA") {
+        return PathBuf::from(dir).join("whisper-rs").join("models");
+    }
+    if let Some(dir) = std::env::var_os("XDG_CACHE_HOME") {
+        return PathBuf::from(dir).join("whisper-rs").join("models");
+    }
+    if let Some(dir) = std::env::var_os("HOME") {
+        return PathBuf::from(dir).join(".cache").join("whisper-rs").join("models");
+    }
     PathBuf::from("models")
 }

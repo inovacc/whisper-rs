@@ -89,7 +89,7 @@ impl<T: Transcribe> StreamSession<T> {
             });
         }
         // Partial = the full current hypothesis text (tentative view).
-        let partial: String = tokens.iter().map(|t| t.text.as_str()).collect::<Vec<_>>().join(" ");
+        let partial: String = super::join_tokens(&tokens);
         if !partial.is_empty() {
             events.push(StreamEvent::PartialText(partial));
         }

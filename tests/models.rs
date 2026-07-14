@@ -1,7 +1,7 @@
 #![cfg(feature = "download")]
 use std::path::Path;
 use whisper_rs::error::WhisperError;
-use whisper_rs::models::{cached_path, download_model, model_url};
+use whisper_rs::models::{cached_path, default_cache_dir, download_model, model_url};
 
 #[test]
 fn url_and_path_are_correct() {
@@ -37,6 +37,24 @@ fn rejects_traversal_id() {
             other => panic!("download_model({bad:?}) expected Config error, got {other:?}"),
         }
     }
+}
+
+#[test]
+fn env_override_sets_cache_dir() {
+    // Self-contained: save/restore the var so this test doesn't leak state to others.
+    let saved = std::env::var_os("WHISPER_RS_CACHE_DIR");
+    let want = std::env::temp_dir().join("whisper_rs_cache_dir_override_test");
+    unsafe {
+        std::env::set_var("WHISPER_RS_CACHE_DIR", &want);
+    }
+    let got = default_cache_dir();
+    unsafe {
+        match &saved {
+            Some(v) => std::env::set_var("WHISPER_RS_CACHE_DIR", v),
+            None => std::env::remove_var("WHISPER_RS_CACHE_DIR"),
+        }
+    }
+    assert_eq!(got, want);
 }
 
 #[test]

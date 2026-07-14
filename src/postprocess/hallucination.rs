@@ -20,6 +20,9 @@ pub fn text_similarity(a: &str, b: &str) -> f32 {
 
 /// For each `primary` segment, flag it as a hallucination suspect when its best text-similarity to any
 /// TIME-OVERLAPPING `secondary` segment is below `threshold`. Returns one bool per primary segment.
+///
+/// A primary segment with **no time-overlapping** secondary segment scores 0 and is therefore
+/// flagged — absence of a cross-pass counterpart is treated as a hallucination signal.
 pub fn flag_hallucinations(primary: &[Segment], secondary: &[Segment], threshold: f32) -> Vec<bool> {
     primary
         .iter()
