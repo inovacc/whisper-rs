@@ -12,11 +12,14 @@ pub struct Token {
     pub end: f32,
 }
 
-/// The result of observing a new hypothesis: newly-committed text and the updated cursor.
+/// The result of observing a new hypothesis: newly-committed text and cursor bounds.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Committed {
     pub text: String,
+    /// Exclusive upper token index of the committed region (new cursor).
     pub committed_upto: usize,
+    /// Inclusive lower token index the commit started at (cursor before advancing).
+    pub committed_from: usize,
 }
 
 /// Events emitted by a streaming session as hypotheses are observed and committed.
@@ -32,6 +35,20 @@ pub trait StreamPolicy {
     /// Observe a full-hypothesis token list; return the newly-committable prefix (beyond what was
     /// already committed).
     fn observe(&mut self, hypothesis: &[Token]) -> Committed;
+    /// Final signal (end of stream). Commit everything not yet committed.
+    fn observe_final(&mut self, hypothesis: &[Token]) -> Committed {
+        self.observe(hypothesis)
+    }
+}
+
+/// Abstraction over a transcriber so streaming sessions can be unit-tested with a fake
+/// (the concrete [`crate::asr::Transcriber`] needs a real model).
+pub trait Transcribe {
+    fn transcribe(
+        &mut self,
+        pcm: &[f32],
+        opts: &crate::asr::AsrOptions,
+    ) -> crate::error::Result<Vec<crate::output::Segment>>;
 }
 
 pub mod local_agreement;

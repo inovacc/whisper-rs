@@ -1,20 +1,23 @@
 //! Synchronous streaming session over a [`Transcriber`]: push audio, poll for events.
 use crate::asr::{AsrOptions, Transcriber};
-use super::{StreamEvent, StreamPolicy, Token};
+use super::{StreamEvent, StreamPolicy, Token, Transcribe};
 
 /// Synchronous streaming session: push 16 kHz mono f32 frames, poll for events.
 /// Re-decodes the whole accumulated buffer each poll (simple LocalAgreement-friendly approach);
 /// VAD-boundary incremental decoding is a later refinement.
-pub struct StreamSession {
-    transcriber: Transcriber,
+///
+/// Generic over the [`Transcribe`] seam (defaulting to the concrete [`Transcriber`]) so the
+/// session logic can be unit-tested offline with a fake transcriber.
+pub struct StreamSession<T: Transcribe = Transcriber> {
+    transcriber: T,
     policy: Box<dyn StreamPolicy + Send>,
     opts: AsrOptions,
     buffer: Vec<f32>,
     dirty: bool,
 }
 
-impl StreamSession {
-    pub fn new(transcriber: Transcriber, policy: Box<dyn StreamPolicy + Send>, opts: AsrOptions) -> Self {
+impl<T: Transcribe> StreamSession<T> {
+    pub fn new(transcriber: T, policy: Box<dyn StreamPolicy + Send>, opts: AsrOptions) -> Self {
         Self { transcriber, policy, opts, buffer: Vec::new(), dirty: false }
     }
 
@@ -46,7 +49,7 @@ impl StreamSession {
         self.dirty = false;
     }
 
-    fn decode_and_advance(&mut self, _final_pass: bool) -> Vec<StreamEvent> {
+    fn decode_and_advance(&mut self, final_pass: bool) -> Vec<StreamEvent> {
         let segments = match self.transcriber.transcribe(&self.buffer, &self.opts) {
             Ok(s) => s,
             Err(e) => return vec![StreamEvent::Error(e.to_string())],
@@ -64,13 +67,25 @@ impl StreamSession {
             .filter(|t| !t.text.is_empty())
             .collect();
 
-        let committed = self.policy.observe(&tokens);
+        let committed = if final_pass {
+            self.policy.observe_final(&tokens)
+        } else {
+            self.policy.observe(&tokens)
+        };
         let mut events = Vec::new();
         if !committed.text.trim().is_empty() {
+            // Time the event from the committed token slice, clamping to the hypothesis length.
+            let (start, end) = if committed.committed_upto > committed.committed_from
+                && committed.committed_upto <= tokens.len()
+            {
+                (tokens[committed.committed_from].start, tokens[committed.committed_upto - 1].end)
+            } else {
+                (0.0, 0.0)
+            };
             events.push(StreamEvent::CommittedSegment {
                 text: committed.text.trim().to_string(),
-                start: tokens.first().map(|t| t.start).unwrap_or(0.0),
-                end: tokens.last().map(|t| t.end).unwrap_or(0.0),
+                start,
+                end,
             });
         }
         // Partial = the full current hypothesis text (tentative view).

@@ -18,9 +18,21 @@ impl TwoPass {
             committed_upto: 0,
         }
     }
+}
+
+impl StreamPolicy for TwoPass {
+    fn observe(&mut self, hypothesis: &[Token]) -> Committed {
+        self.latest = hypothesis.to_vec();
+        Committed {
+            text: String::new(),
+            committed_upto: self.committed_upto,
+            committed_from: self.committed_upto,
+        }
+    }
 
     /// Commit everything in `hypothesis` beyond what has already been committed.
-    pub fn observe_final(&mut self, hypothesis: &[Token]) -> Committed {
+    fn observe_final(&mut self, hypothesis: &[Token]) -> Committed {
+        let from = self.committed_upto;
         let newly = if hypothesis.len() > self.committed_upto {
             &hypothesis[self.committed_upto..]
         } else {
@@ -36,16 +48,7 @@ impl TwoPass {
         Committed {
             text,
             committed_upto: self.committed_upto,
-        }
-    }
-}
-
-impl StreamPolicy for TwoPass {
-    fn observe(&mut self, hypothesis: &[Token]) -> Committed {
-        self.latest = hypothesis.to_vec();
-        Committed {
-            text: String::new(),
-            committed_upto: self.committed_upto,
+            committed_from: from,
         }
     }
 }
