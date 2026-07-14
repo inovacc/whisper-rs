@@ -100,6 +100,25 @@ impl Context {
     pub(crate) fn as_ptr(&self) -> *mut whisper_context {
         self.0
     }
+
+    /// Raw per-token timing for one segment: (text, t0_centiseconds, t1_centiseconds, probability).
+    pub fn segment_tokens(&self, seg: i32) -> Vec<(String, i64, i64, f32)> {
+        // SAFETY: seg in [0, n_segments); token indices in [0, n_tokens); pointers are whisper-owned.
+        unsafe {
+            let n = whisper_full_n_tokens(self.0, seg);
+            let mut v = Vec::with_capacity(n.max(0) as usize);
+            for j in 0..n {
+                let td = whisper_full_get_token_data(self.0, seg, j);
+                let tptr = whisper_full_get_token_text(self.0, seg, j);
+                if tptr.is_null() {
+                    continue;
+                }
+                let text = CStr::from_ptr(tptr).to_string_lossy().into_owned();
+                v.push((text, td.t0, td.t1, td.p));
+            }
+            v
+        }
+    }
 }
 
 impl Drop for Context {

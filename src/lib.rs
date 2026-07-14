@@ -4,6 +4,7 @@ pub mod asr;
 pub mod audio;
 pub mod error;
 pub mod output;
+pub mod timestamps;
 
 #[doc(hidden)]
 pub mod ffi;

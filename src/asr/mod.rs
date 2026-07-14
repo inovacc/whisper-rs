@@ -38,7 +38,7 @@ impl Transcriber {
                 text: self.ctx.segment_text(i),
                 start: self.ctx.segment_t0(i) as f32 / 100.0,
                 end: self.ctx.segment_t1(i) as f32 / 100.0,
-                words: vec![], // filled in Task 7
+                words: crate::timestamps::words_for_segment(&self.ctx, i),
                 flags: SegmentFlags::default(),
             });
         }
