@@ -1,4 +1,5 @@
 use whisper_rs::audio::AudioInput;
+use whisper_rs::error::WhisperError;
 
 #[test]
 fn decodes_and_resamples_to_16k_mono() {
@@ -61,4 +62,23 @@ fn empty_input_returns_empty() {
     }
     let a = whisper_rs::audio::AudioInput::from_wav_file(&path).unwrap();
     assert_eq!(a.to_mono_16k().unwrap(), Vec::<f32>::new());
+}
+
+#[test]
+fn decodes_float_wav() {
+    let a = AudioInput::from_wav_file("tests/fixtures/sine_f32_16k.wav").unwrap();
+    let pcm = a.to_mono_16k().unwrap();
+    assert!(!pcm.is_empty());
+    assert!(pcm.iter().all(|s| *s >= -1.0 && *s <= 1.0));
+}
+
+#[test]
+fn corrupt_wav_is_audio_decode_error() {
+    let path = std::env::temp_dir().join("whisper_rs_corrupt.wav");
+    std::fs::write(&path, b"not a real wav file").unwrap();
+    match AudioInput::from_wav_file(&path) {
+        Err(WhisperError::AudioDecode(_)) => {}
+        Err(other) => panic!("expected AudioDecode error, got {other:?}"),
+        Ok(_) => panic!("expected AudioDecode error, got Ok"),
+    }
 }
