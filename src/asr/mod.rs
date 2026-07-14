@@ -46,3 +46,10 @@ impl Transcriber {
         Ok(out)
     }
 }
+
+#[cfg(feature = "streaming")]
+impl crate::stream::Transcribe for Transcriber {
+    fn transcribe(&mut self, pcm: &[f32], opts: &AsrOptions) -> Result<Vec<crate::output::Segment>> {
+        Transcriber::transcribe(self, pcm, opts)
+    }
+}

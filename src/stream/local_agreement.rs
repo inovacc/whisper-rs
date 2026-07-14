@@ -30,10 +30,12 @@ fn common_prefix_len(a: &[Token], b: &[Token]) -> usize {
 
 impl StreamPolicy for LocalAgreement2 {
     fn observe(&mut self, hypothesis: &[Token]) -> Committed {
+        let from = self.committed_upto;
         let result = match &self.previous {
             None => Committed {
                 text: String::new(),
                 committed_upto: self.committed_upto,
+                committed_from: from,
             },
             Some(previous) => {
                 let common = common_prefix_len(previous, hypothesis);
@@ -48,16 +50,41 @@ impl StreamPolicy for LocalAgreement2 {
                     Committed {
                         text,
                         committed_upto: self.committed_upto,
+                        committed_from: from,
                     }
                 } else {
                     Committed {
                         text: String::new(),
                         committed_upto: self.committed_upto,
+                        committed_from: from,
                     }
                 }
             }
         };
         self.previous = Some(hypothesis.to_vec());
         result
+    }
+
+    /// Final signal: commit the tail from the cursor to the end of `hypothesis`. Idempotent —
+    /// re-committing after the cursor has reached the end yields empty text.
+    fn observe_final(&mut self, hypothesis: &[Token]) -> Committed {
+        let from = self.committed_upto;
+        let newly = if hypothesis.len() > self.committed_upto {
+            &hypothesis[self.committed_upto..]
+        } else {
+            &[]
+        };
+        let text = newly
+            .iter()
+            .map(|t| t.text.as_str())
+            .collect::<Vec<_>>()
+            .join(" ");
+        self.committed_upto = hypothesis.len().max(self.committed_upto);
+        self.previous = Some(hypothesis.to_vec());
+        Committed {
+            text,
+            committed_upto: self.committed_upto,
+            committed_from: from,
+        }
     }
 }
