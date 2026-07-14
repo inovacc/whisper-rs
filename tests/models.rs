@@ -58,6 +58,17 @@ fn env_override_sets_cache_dir() {
 }
 
 #[test]
+fn cache_hit_returns_without_network() {
+    let dir = std::env::temp_dir().join("whisper_rs_cache_hit_test");
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = cached_path("tiny.en", &dir).unwrap();
+    std::fs::write(&path, b"fake cached model bytes").unwrap();
+
+    let got = download_model("tiny.en", &dir).unwrap();
+    assert_eq!(got, path);
+}
+
+#[test]
 #[ignore = "network: downloads ~75MB tiny.en model"]
 fn download_tiny_en_fetches_file() {
     let dir = std::env::temp_dir().join("whisper_rs_dl_test");
