@@ -1,5 +1,5 @@
 # Roadmap — whisper-rs
-<!-- rev:002 -->
+<!-- rev:003 -->
 
 **Project type:** Rust (pre-scaffold) — no `Cargo.toml` exists yet. This roadmap tracks the crate
 defined in `docs/superpowers/specs/2026-07-14-whisper-rs-design.md` and built by the plans under
@@ -22,17 +22,18 @@ diarization, streaming, and structured output all ship in v1. The phases below a
       (`docs/superpowers/plans/2026-07-14-whisper-rs-v1-foundation.md`)
 - [x] User sign-off on spec (interactive)
 
-## Phase 1 — Foundation (NOT STARTED, ready)
+## Phase 1 — Foundation (COMPLETE — branch `feat/v1-foundation`, final review READY TO MERGE)
 Plan: `docs/superpowers/plans/2026-07-14-whisper-rs-v1-foundation.md`. Delivers batch transcription
-of an audio file → structured, word-timestamped `Transcript`.
-- [ ] Task 1: Scaffold crate + `git init`
-- [ ] Task 2: Vendor whisper.cpp + `build.rs` (bindgen + cc) + raw FFI bindings + smoke test
-- [ ] Task 3: Crate-wide `WhisperError` + `ModelKind`
-- [ ] Task 4: Structured output types (`Transcript`/`Segment`/`Word`)
-- [ ] Task 5: Audio decode + downmix + 16 kHz resample
-- [ ] Task 6: Core ASR over FFI (`Transcriber`, RAII `Context`)
-- [ ] Task 7: DTW word timestamps + monotonic enforcement
-- [ ] Task 8: Batch `Pipeline` (builder + `transcribe_file`)
+of an audio file → structured, word-timestamped `Transcript`. All 11 tests pass; `clippy` clean;
+`unsafe` confined to `src/ffi/`; real JFK-clip transcription verified end-to-end.
+- [x] Task 1: Scaffold crate + `git init` (4f6dc65)
+- [x] Task 2: Vendor whisper.cpp + `build.rs` (bindgen + cc) + raw FFI bindings + smoke test (1b2ac1d)
+- [x] Task 3: Crate-wide `WhisperError` + `ModelKind` (dc8f2bf)
+- [x] Task 4: Structured output types (`Transcript`/`Segment`/`Word`) (e59e0f3)
+- [x] Task 5: Audio decode + downmix + 16 kHz resample (2aab7f2)
+- [x] Task 6: Core ASR over FFI (`Transcriber`, RAII `Context`) (a414081)
+- [x] Task 7: token-level word timestamps + monotonic enforcement (ae1b2c9)
+- [x] Task 8: Batch `Pipeline` (builder + `transcribe_file`) (6d4fa8c)
 
 ## Phase 2 — Diarization (NOT STARTED)
 `feature = "diarization"`. Depends on Phase 1. The strongest market differentiator found in research
