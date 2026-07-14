@@ -19,8 +19,14 @@ impl ModelRef {
     fn resolve(&self) -> Result<PathBuf> {
         match self {
             ModelRef::Path(p) => Ok(p.clone()),
+            #[cfg(feature = "download")]
+            ModelRef::Download(id) => {
+                crate::models::download_model(id, &crate::models::default_cache_dir())
+            }
+            #[cfg(not(feature = "download"))]
             ModelRef::Download(_) => Err(WhisperError::Config(
-                "model download requires the `download` feature (not in this build)".into())),
+                "model download requires the `download` feature".into(),
+            )),
         }
     }
 }
