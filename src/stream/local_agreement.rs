@@ -41,11 +41,7 @@ impl StreamPolicy for LocalAgreement2 {
                 let common = common_prefix_len(previous, hypothesis);
                 if common > self.committed_upto {
                     let newly = &hypothesis[self.committed_upto..common];
-                    let text = newly
-                        .iter()
-                        .map(|t| t.text.as_str())
-                        .collect::<Vec<_>>()
-                        .join(" ");
+                    let text = super::join_tokens(newly);
                     self.committed_upto = common;
                     Committed {
                         text,
@@ -74,11 +70,7 @@ impl StreamPolicy for LocalAgreement2 {
         } else {
             &[]
         };
-        let text = newly
-            .iter()
-            .map(|t| t.text.as_str())
-            .collect::<Vec<_>>()
-            .join(" ");
+        let text = super::join_tokens(newly);
         self.committed_upto = hypothesis.len().max(self.committed_upto);
         self.previous = Some(hypothesis.to_vec());
         Committed {

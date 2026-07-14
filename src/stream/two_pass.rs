@@ -38,11 +38,7 @@ impl StreamPolicy for TwoPass {
         } else {
             &[]
         };
-        let text = newly
-            .iter()
-            .map(|t| t.text.as_str())
-            .collect::<Vec<_>>()
-            .join(" ");
+        let text = super::join_tokens(newly);
         self.committed_upto = hypothesis.len().max(self.committed_upto);
         self.latest = hypothesis.to_vec();
         Committed {
