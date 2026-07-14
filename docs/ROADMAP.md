@@ -1,5 +1,5 @@
 # Roadmap — whisper-rs
-<!-- rev:003 -->
+<!-- rev:004 -->
 
 **Project type:** Rust (pre-scaffold) — no `Cargo.toml` exists yet. This roadmap tracks the crate
 defined in `docs/superpowers/specs/2026-07-14-whisper-rs-design.md` and built by the plans under
@@ -35,19 +35,28 @@ of an audio file → structured, word-timestamped `Transcript`. All 11 tests pas
 - [x] Task 7: token-level word timestamps + monotonic enforcement (ae1b2c9)
 - [x] Task 8: Batch `Pipeline` (builder + `transcribe_file`) (6d4fa8c)
 
-## Phase 2 — Diarization (NOT STARTED)
-`feature = "diarization"`. Depends on Phase 1. The strongest market differentiator found in research
-(no Rust crate ships native diarization ergonomically).
-- [ ] `ort` (ONNX Runtime) integration, pinned pre-release rc (tracked risk)
-- [ ] `pyannote-segmentation-3.0` + speaker-embedding + clustering → `Diarizer::diarize`
-- [ ] `merge(words, turns)` timeline join → speaker-labeled `Transcript`
-- [ ] Wire `Pipeline::diarization(cfg)`
+## Phase 2 — Diarization (IN PROGRESS — model-independent slice done)
+`feature = "diarization"`. Plan: `docs/superpowers/plans/2026-07-14-whisper-rs-v2-diarization.md`.
+The strongest market differentiator (no Rust crate ships native diarization ergonomically).
+- [x] Types (`SpeakerTurn`, `DiarizeConfig`) + `diarization` feature scaffolding (df7f65c)
+- [x] `merge(words, turns)` → `assign_speakers` timeline join (pure, tested) (df7f65c)
+- [x] Agglomerative speaker clustering (pure, tested) (df7f65c)
+- [ ] **BLOCKED** — `ort` + `pyannote-segmentation-3.0` ONNX segmentation inference (needs HF-gated model)
+- [ ] **BLOCKED** — speaker-embedding ONNX inference (needs HF-gated model)
+- [ ] Wire `Pipeline::diarization(cfg)` (after inference lands)
 
-## Phase 3 — Streaming (NOT STARTED)
-`feature = "streaming"`. Depends on Phase 1. Fills the confirmed gap — no tool ships real-time
-diarized transcription.
-- [ ] `StreamPolicy` trait + `LocalAgreement2` + `TwoPass` implementations (both configurable)
-- [ ] `cpal` mic capture + `tokio` channel glue, VAD-boundary-driven chunking
+> Blocker: `pyannote-segmentation-3.0` + the embedding model are HuggingFace-gated — a maintainer must
+> accept the licenses and place the `.onnx` files under `models/`. The plan's model-gated tasks (3–5) and
+> their tests stay `#[ignore]`d until then. See `docs/BACKLOG.md` P3.
+
+## Phase 3 — Streaming (NOT STARTED — plan written)
+`feature = "streaming"`. Plan: `docs/superpowers/plans/2026-07-14-whisper-rs-v3-streaming.md`. Fills the
+confirmed gap — no tool ships real-time diarized transcription. The pure `StreamPolicy` commit logic is
+testable without a model; the worker session + mic + e2e are model/hardware-gated. Reference: Handy
+`StreamRouter` (BACKLOG P6).
+- [ ] `StreamPolicy` trait + `LocalAgreement2` + `TwoPass` (both pure/testable, configurable)
+- [ ] `StreamSession` worker thread + VAD-boundary chunking (model-gated)
+- [ ] `cpal` mic capture source (hardware-gated)
 - [ ] `Pipeline::stream(policy)` emitting `PartialText` / `CommittedSegment` / `SpeakerTurn` / `Error`
 
 ## Phase 4 — Preprocessing, post-processing & model downloader (NOT STARTED)
