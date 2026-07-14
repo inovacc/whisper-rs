@@ -10,13 +10,14 @@ license = "BSD-3-Clause"
 default = ["diarization", "streaming", "download"]
 diarization = ["dep:ndarray"]
 streaming = []
-download = []
+download = ["dep:ureq"]
 
 [dependencies]
 thiserror = "2"
 hound = "3"
 rubato = "0.15"
 ndarray = { version = "0.16", optional = true }
+ureq = { version = "2", optional = true }
 
 [build-dependencies]
 bindgen = "0.72"

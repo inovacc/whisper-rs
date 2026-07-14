@@ -29,6 +29,8 @@ pub enum WhisperError {
     Ffi(i32),
     #[error("invalid configuration: {0}")]
     Config(String),
+    #[error("model download failed: {0}")]
+    ModelDownload(String),
 }
 
 pub type Result<T> = std::result::Result<T, WhisperError>;

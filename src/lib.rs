@@ -5,9 +5,14 @@ pub mod audio;
 #[cfg(feature = "diarization")]
 pub mod diarize;
 pub mod error;
+#[cfg(feature = "download")]
+pub mod models;
 pub mod output;
 pub mod pipeline;
+pub mod postprocess;
 pub mod prelude;
+#[cfg(feature = "streaming")]
+pub mod stream;
 pub mod timestamps;
 
 #[doc(hidden)]

@@ -1,5 +1,5 @@
 # Backlog — whisper-rs
-<!-- rev:004 -->
+<!-- rev:005 -->
 
 Grounded in `docs/discovery/IDEA-BRIEF.md`, the approved design spec
 (`docs/superpowers/specs/2026-07-14-whisper-rs-design.md`), and the foundation plan
@@ -99,6 +99,12 @@ Full evidence + file:line citations: discovery evidence (`...\scratchpad\exec\ha
 written — the analyst lacked a Write tool; citations are in the run record / this backlog).
 
 ## Resolved
+- 2026-07-14 — **Post-processing + streaming core + downloader (`feat/postproc-streaming`).**
+  Pure text transforms: number normalization, repeat-collapse, filler-removal (8adcf12) + `PostConfig`
+  wired into `Pipeline` (bc17537); pure streaming policy core — `StreamPolicy` + LocalAgreement-2 +
+  two-pass (95a887e); whisper GGML model downloader behind `feature = "download"` (1c908e5, public models,
+  not HF-gated). Phase 4 plan written; `docs/ISSUES.md` created. All at `--all-features`: 34 passing,
+  4 model-gated ignored, clippy clean, `--no-default-features` builds.
 - 2026-07-14 — **Foundation polish (`feat/foundation-polish`).** Empty-audio + i32-length guards +
   pure `words_from_tokens` filter test (7c890d0); GitHub Actions CI with feature-matrix + clippy +
   llvm-cov coverage (3b032223); README + canonical AGENTS.md + thin CLAUDE.md (2b3d55e). "DTW" rename
