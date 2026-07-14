@@ -80,3 +80,11 @@ impl Pipeline {
         Ok(Transcript { segments })
     }
 }
+
+#[cfg(feature = "streaming")]
+impl Pipeline {
+    /// Turn this pipeline into a streaming session using the given policy.
+    pub fn into_stream(self, policy: Box<dyn crate::stream::StreamPolicy + Send>) -> crate::stream::StreamSession {
+        crate::stream::StreamSession::new(self.transcriber, policy, self.opts)
+    }
+}
