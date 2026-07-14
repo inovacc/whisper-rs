@@ -161,6 +161,53 @@ pub fn remove_fillers(text: &str, lang: &str) -> String {
     tokens.join(" ")
 }
 
+/// Which post-processing transforms to apply, and in what language.
+#[derive(Debug, Clone)]
+pub struct PostConfig {
+    pub normalize_numbers: bool,
+    pub collapse_repeats: bool,
+    pub remove_fillers: bool,
+    pub language: String, // for remove_fillers; default "en"
+}
+
+impl Default for PostConfig {
+    fn default() -> Self {
+        Self {
+            normalize_numbers: false,
+            collapse_repeats: false,
+            remove_fillers: false,
+            language: "en".into(),
+        }
+    }
+}
+
+impl PostConfig {
+    /// Enable the common set (numbers + repeats + fillers) for a language.
+    pub fn all(language: impl Into<String>) -> Self {
+        Self {
+            normalize_numbers: true,
+            collapse_repeats: true,
+            remove_fillers: true,
+            language: language.into(),
+        }
+    }
+
+    /// Apply the enabled transforms to a single text string (order: fillers -> repeats -> numbers).
+    pub fn apply(&self, text: &str) -> String {
+        let mut s = text.to_string();
+        if self.remove_fillers {
+            s = remove_fillers(&s, &self.language);
+        }
+        if self.collapse_repeats {
+            s = collapse_repeats(&s);
+        }
+        if self.normalize_numbers {
+            s = normalize_numbers(&s);
+        }
+        s
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
