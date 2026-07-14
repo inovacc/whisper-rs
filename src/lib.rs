@@ -4,6 +4,8 @@ pub mod asr;
 pub mod audio;
 pub mod error;
 pub mod output;
+pub mod pipeline;
+pub mod prelude;
 pub mod timestamps;
 
 #[doc(hidden)]

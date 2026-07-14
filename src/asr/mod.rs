@@ -4,6 +4,7 @@ use crate::ffi;
 use crate::output::{Segment, SegmentFlags};
 use std::path::Path;
 
+#[derive(Debug)]
 pub struct AsrOptions {
     pub language: Option<String>, // None => auto-detect
     pub threads: i32,
