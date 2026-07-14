@@ -7,6 +7,7 @@ pub mod diarize;
 pub mod error;
 pub mod output;
 pub mod pipeline;
+pub mod postprocess;
 pub mod prelude;
 pub mod timestamps;
 
