@@ -1,4 +1,4 @@
-target/
-models/*.bin
- models/*.onnx
+/target
 Cargo.lock
+/models/*.bin
+/models/*.onnx

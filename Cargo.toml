@@ -1,0 +1,22 @@
+[package]
+name = "whisper-rs"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+publish = false
+license = "BSD-3-Clause"
+
+[features]
+default = ["diarization", "streaming", "download"]
+diarization = []
+streaming = []
+download = []
+
+[dependencies]
+thiserror = "2"
+hound = "3"
+rubato = "0.15"
+
+[build-dependencies]
+bindgen = "0.72"
+cc = "1"
