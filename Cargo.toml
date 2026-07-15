@@ -11,6 +11,8 @@ default = ["diarization", "streaming", "download"]
 diarization = []
 streaming = []
 download = ["dep:ureq", "dep:sha2"]
+# Opt-in: document + surface the raw `ffi` module (unwrapped whisper.cpp bindings) for power users.
+raw-api = []
 
 [dependencies]
 thiserror = "2"

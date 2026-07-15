@@ -15,7 +15,9 @@ pub mod prelude;
 pub mod stream;
 pub mod timestamps;
 
-#[doc(hidden)]
+// The raw whisper.cpp FFI layer (the only `unsafe` module). Hidden from docs by default; enable the
+// `raw-api` feature to document it for power users who need the unwrapped bindings.
+#[cfg_attr(not(feature = "raw-api"), doc(hidden))]
 pub mod ffi;
 
 pub use error::{Result, WhisperError};
