@@ -1,5 +1,5 @@
 # Known Issues & Limitations — whisper-rs
-<!-- rev:003 -->
+<!-- rev:004 -->
 
 Tracks known limitations, caveats, and external blockers. For planned work see `docs/ROADMAP.md`;
 for prioritized follow-ups see `docs/BACKLOG.md`.
@@ -40,6 +40,11 @@ for prioritized follow-ups see `docs/BACKLOG.md`.
 
 ## Resolved
 
+- **2026-07-15 — Fixed the Linux/macOS build (CI was red on 2/3 OSes).** `build.rs` compiled ggml's
+  `.c` sources through `g++` (single `cc::Build` with `.cpp(true)`), so `void*`→`T*` and C-only
+  constructs were hard errors under GCC — the crate had never actually built on Linux/macOS. Now the
+  C sources compile as C (objects folded into the C++ archive) with `_GNU_SOURCE` defined for the
+  glibc `CPU_*` affinity symbols. Full CI matrix (3 OSes + coverage + audit + MSRV 1.86 + ffmpeg) is
+  green.
 - **2026-07-14 — CI now builds a 3-OS matrix.** `.github/workflows/ci.yml` runs
-  `[ubuntu-latest, macos-latest, windows-latest]`; the prior single-OS build limitation no longer
-  applies.
+  `[ubuntu-latest, macos-latest, windows-latest]`.
