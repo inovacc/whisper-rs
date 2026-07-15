@@ -21,8 +21,9 @@ fn main() -> whisper_rs::Result<()> {
     } else {
         #[cfg(feature = "download")]
         {
-            eprintln!("resolving model id {model_arg:?} via downloader...");
-            let p = whisper_rs::models::download_model(&model_arg, &whisper_rs::models::default_cache_dir())?;
+            let cache = whisper_rs::models::default_cache_dir();
+            eprintln!("resolving model id {model_arg:?} -> {} (larger models are a big one-time download)...", cache.display());
+            let p = whisper_rs::models::download_model(&model_arg, &cache)?;
             eprintln!("model ready: {}", p.display());
             ModelRef::path(p)
         }
@@ -42,5 +43,13 @@ fn main() -> whisper_rs::Result<()> {
         let flag = if seg.flags.hallucination_suspect { " [?]" } else { "" };
         println!("[{:>7.2} -> {:>7.2}]{flag} {}", seg.start, seg.end, seg.text.trim());
     }
+
+    // Also write subtitle sidecars next to the input (dogfoods Transcript::to_srt/to_vtt).
+    let wav_path = Path::new(&wav);
+    let srt = wav_path.with_extension("srt");
+    let vtt = wav_path.with_extension("vtt");
+    std::fs::write(&srt, transcript.to_srt()).map_err(whisper_rs::WhisperError::Io)?;
+    std::fs::write(&vtt, transcript.to_vtt()).map_err(whisper_rs::WhisperError::Io)?;
+    eprintln!("wrote {} and {}", srt.display(), vtt.display());
     Ok(())
 }
