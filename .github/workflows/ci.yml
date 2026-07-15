@@ -73,7 +73,7 @@ jobs:
         run: cargo audit
 
   msrv:
-    name: msrv (1.75)
+    name: msrv (1.86)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -81,7 +81,7 @@ jobs:
           submodules: recursive
       - name: Install libclang + clang
         run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
-      - uses: dtolnay/rust-toolchain@1.75
+      - uses: dtolnay/rust-toolchain@1.86
       - uses: Swatinem/rust-cache@v2
-      - name: Build (MSRV 1.75)
+      - name: Build (MSRV 1.86)
         run: cargo build --verbose

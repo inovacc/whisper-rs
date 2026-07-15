@@ -1,7 +1,7 @@
 # Roadmap — whisper-rs
-<!-- rev:007 -->
+<!-- rev:008 -->
 
-**Project type:** Rust crate (`Cargo.toml`, edition 2021, MSRV 1.75). This roadmap tracks the crate
+**Project type:** Rust crate (`Cargo.toml`, edition 2021, MSRV 1.86). This roadmap tracks the crate
 defined in `docs/superpowers/specs/2026-07-14-whisper-rs-design.md`, built by the plans under
 `docs/superpowers/plans/`, and hardened by the advisor plans under `plans/`.
 
@@ -86,7 +86,7 @@ Independent `improve` audit → 10 vetted plans under `plans/`, each executed, r
 - [x] 005 — harden downloader (id validation, truncation guard, SHA-256 hook)
 - [x] 006 — agglomerative clustering O(n³·d)→O(n²) (cached distances + Lance–Williams)
 - [x] 007 — drain resampler delay so word timestamps stay aligned
-- [x] 008 — CI gates: `cargo fmt --check` + `cargo-audit` + MSRV 1.75 leg + `rustfmt.toml`
+- [x] 008 — CI gates: `cargo fmt --check` + `cargo-audit` + MSRV 1.86 leg + `rustfmt.toml`
 - [x] 009 — test-coverage gaps (float-WAV decode, downloader cache-hit, cfg-off download)
 - [x] 010 — cleanups (in-place preprocess, `join_tokens`, stable cache dir, hallucination doc)
 
@@ -94,7 +94,7 @@ Independent `improve` audit → 10 vetted plans under `plans/`, each executed, r
 `cargo llvm-cov` (CI + local). **Default features: 78.94% line / 76.68% region** (2026-07-14, after the
 maturation pass; up from the 71.77% / 70.31% pre-pass baseline), excluding the 4 model-gated `#[ignore]`d
 tests. Full suite at `--all-features`: ~55 passing + model-gated ignored. CI now also enforces
-`cargo fmt --check`, `cargo audit`, and an MSRV 1.75 build leg (advisor plan 008).
+`cargo fmt --check`, `cargo audit`, and an MSRV 1.86 build leg (advisor plan 008).
 
 ## Deferred to post-v1 (see `docs/BACKLOG.md`)
 Stereo channel-split diarization fast-path · DER metrics hooks · multi-mic DOA/TDOA spatial

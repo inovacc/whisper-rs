@@ -1,5 +1,5 @@
 # whisper-rs
-<!-- rev:002 -->
+<!-- rev:003 -->
 
 A feature-rich, safe Rust wrapper over [whisper.cpp](https://github.com/ggml-org/whisper.cpp) — local, offline speech-to-text with word-level timestamps.
 
@@ -54,7 +54,7 @@ Works today:
 
 ## Build requirements
 
-- Rust 1.75+ (MSRV, edition 2021).
+- Rust 1.86+ (MSRV, edition 2021) — the `ureq`/`url`/`idna`/`icu` chain requires rustc ≥ 1.86.
 - **`libclang`** — required by `bindgen` to generate FFI bindings from whisper.cpp's C header.
 - A C/C++ toolchain (whisper.cpp/ggml are compiled from source via `cc`).
   - **Windows:** MSVC Build Tools (the `build.rs` detects the `-msvc` target and adjusts flags/links

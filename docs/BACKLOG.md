@@ -1,5 +1,5 @@
 # Backlog — whisper-rs
-<!-- rev:007 -->
+<!-- rev:008 -->
 
 Grounded in `docs/discovery/IDEA-BRIEF.md`, the approved design spec
 (`docs/superpowers/specs/2026-07-14-whisper-rs-design.md`), the implementation plans under
@@ -27,8 +27,6 @@ follow-up work that remains.
   temp-file digest before `rename`, and un-stub. Effort: S. (advisor plan 005 STOP-condition follow-up)
 - **Pin `HF_BASE` to an immutable revision** — the downloader resolves models from the mutable
   `…/resolve/main` ref; pin a commit hash for a known-good model set (supply-chain hardening). Effort: S.
-- **Confirm the MSRV 1.75 build actually passes** — advisor plan 008 added the CI leg but it was not
-  verified locally; if `ureq`/`bindgen`/`rubato` need newer than 1.75, raise `rust-version` or the floor. Effort: S.
 
 ## P3 — Deferred v1-adjacent features (design-approved, scheduled post-foundation)
 These are all part of the feature-rich v1 but land in later build-order plans (Phases 2–4):
@@ -110,6 +108,11 @@ written — the analyst lacked a Write tool; citations are in the run record / t
   only new/active regions and reuse committed prefixes. Effort: L. (ROADMAP Phase 3.)
 
 ## Resolved
+- 2026-07-15 — **MSRV corrected 1.75 → 1.86.** Verification found the declared `rust-version = "1.75"`
+  is unachievable: the `ureq → url → idna → idna_adapter → icu_normalizer/icu_properties/icu_collections`
+  (v2.2.0) chain declares `rust-version = "1.86"`. Raised `Cargo.toml` rust-version, the CI MSRV leg, and
+  the README/AGENTS/ROADMAP claims to 1.86 (steps:next item 7). Pin-older-deps to restore a lower MSRV
+  remains an option if a lower floor is ever required.
 - 2026-07-14 — **Maturation / hardening pass — 10 advisor plans (`plans/`, merged to `main`).**
   Independent `improve` audit → vetted plans, each executed + reviewed + merged: streaming
   finalize/commit data-loss fixes + `Transcribe` seam (001, 54c7c4c); README/AGENTS/ISSUES reconciled

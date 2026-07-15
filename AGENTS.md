@@ -1,5 +1,5 @@
 # AGENTS.md
-<!-- rev:002 -->
+<!-- rev:003 -->
 
 Canonical cross-tool agent instructions for `whisper-rs`. `CLAUDE.md` imports this file — edit here,
 not there.
@@ -42,7 +42,7 @@ shipped behavior.
 
 ## Code style
 
-- Rust 2021, MSRV 1.75.
+- Rust 2021, MSRV 1.86 (the `ureq → url → idna → icu` dependency chain requires rustc ≥ 1.86).
 - **HARD RULE: `unsafe` only in `src/ffi/`.** Every other module is safe Rust; the FFI layer is the
   sole boundary that touches whisper.cpp's C API and owns the `Context` RAII wrapper.
 - One crate-wide error type: `crate::error::WhisperError` (`thiserror`-derived), returned as
