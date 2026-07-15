@@ -1,10 +1,16 @@
 #![cfg(feature = "download")]
 use std::path::Path;
+use std::sync::Mutex;
 use whisper_rs::error::WhisperError;
 use whisper_rs::models::{cached_path, default_cache_dir, download_model, download_model_verified, model_url};
 
+// Serializes tests that read/write the process-global `WHISPER_RS_HF_BASE` env var, since
+// `cargo test` runs tests in parallel threads within one binary.
+static HF_BASE_ENV_LOCK: Mutex<()> = Mutex::new(());
+
 #[test]
 fn url_and_path_are_correct() {
+    let _g = HF_BASE_ENV_LOCK.lock().unwrap();
     assert_eq!(model_url("tiny.en"), "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin");
     assert_eq!(cached_path("base", Path::new("models")).unwrap(), Path::new("models/ggml-base.bin"));
 }
@@ -57,6 +63,24 @@ fn cache_hit_returns_without_network() {
 
     let got = download_model("tiny.en", &dir).unwrap();
     assert_eq!(got, path);
+}
+
+#[test]
+fn hf_base_env_override_changes_model_url() {
+    let _g = HF_BASE_ENV_LOCK.lock().unwrap();
+    let saved = std::env::var_os("WHISPER_RS_HF_BASE");
+    unsafe {
+        std::env::set_var("WHISPER_RS_HF_BASE", "https://example.test/models/resolve/abc123/");
+    }
+    let url = model_url("tiny");
+    unsafe {
+        match &saved {
+            Some(v) => std::env::set_var("WHISPER_RS_HF_BASE", v),
+            None => std::env::remove_var("WHISPER_RS_HF_BASE"),
+        }
+    }
+    // Trailing slash trimmed; id interpolated.
+    assert_eq!(url, "https://example.test/models/resolve/abc123/ggml-tiny.bin");
 }
 
 #[test]

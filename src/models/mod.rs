@@ -2,7 +2,18 @@
 use crate::error::{Result, WhisperError};
 use std::path::{Path, PathBuf};
 
+/// Default model host + path. Uses the mutable `resolve/main` ref; override with
+/// `WHISPER_RS_HF_BASE` (e.g. `.../resolve/<commit-sha>` or a private mirror) to pin an immutable
+/// revision for supply-chain safety.
 const HF_BASE: &str = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main";
+
+/// The effective model base URL: `WHISPER_RS_HF_BASE` if set (trailing slash trimmed), else [`HF_BASE`].
+fn hf_base() -> String {
+    match std::env::var("WHISPER_RS_HF_BASE") {
+        Ok(v) if !v.trim().is_empty() => v.trim().trim_end_matches('/').to_string(),
+        _ => HF_BASE.to_string(),
+    }
+}
 
 /// Validate a model id against a strict allowlist before it is used to build a filename or URL.
 ///
@@ -25,7 +36,7 @@ fn validate_id(id: &str) -> Result<()> {
 
 /// Build the download URL for a whisper GGML model id (e.g. "tiny.en", "base", "small.en", "medium").
 pub fn model_url(id: &str) -> String {
-    format!("{HF_BASE}/ggml-{id}.bin")
+    format!("{}/ggml-{id}.bin", hf_base())
 }
 
 /// The cached file path for a model id under `cache_dir`.
