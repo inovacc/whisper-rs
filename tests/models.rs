@@ -1,7 +1,7 @@
 #![cfg(feature = "download")]
 use std::path::Path;
 use whisper_rs::error::WhisperError;
-use whisper_rs::models::{cached_path, default_cache_dir, download_model, model_url};
+use whisper_rs::models::{cached_path, default_cache_dir, download_model, download_model_verified, model_url};
 
 #[test]
 fn url_and_path_are_correct() {
@@ -57,6 +57,30 @@ fn cache_hit_returns_without_network() {
 
     let got = download_model("tiny.en", &dir).unwrap();
     assert_eq!(got, path);
+}
+
+#[test]
+fn verified_cache_hit_checks_sha256() {
+    let dir = std::env::temp_dir().join("whisper_rs_sha_verify_test");
+    std::fs::create_dir_all(&dir).unwrap();
+    let path = cached_path("tiny.en", &dir).unwrap();
+    std::fs::write(&path, b"hello").unwrap();
+    // SHA-256("hello") = 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+    let good = "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824";
+
+    // Correct digest on a cache hit -> Ok, no network.
+    assert_eq!(download_model_verified("tiny.en", &dir, Some(good)).unwrap(), path);
+    // Upper-case hex still matches (case-insensitive).
+    assert!(download_model_verified("tiny.en", &dir, Some(&good.to_uppercase())).is_ok());
+    // Wrong digest -> ModelDownload error.
+    match download_model_verified("tiny.en", &dir, Some("deadbeef")) {
+        Err(WhisperError::ModelDownload(_)) => {}
+        other => panic!("expected checksum mismatch, got {other:?}"),
+    }
+    // None digest behaves like download_model (cache hit).
+    assert_eq!(download_model_verified("tiny.en", &dir, None).unwrap(), path);
+
+    let _ = std::fs::remove_file(&path);
 }
 
 #[test]

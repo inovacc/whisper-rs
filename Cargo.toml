@@ -10,13 +10,14 @@ license = "BSD-3-Clause"
 default = ["diarization", "streaming", "download"]
 diarization = []
 streaming = []
-download = ["dep:ureq"]
+download = ["dep:ureq", "dep:sha2"]
 
 [dependencies]
 thiserror = "2"
 hound = "3"
 rubato = "0.15"
 ureq = { version = "2", optional = true }
+sha2 = { version = "0.10", optional = true }
 
 [build-dependencies]
 bindgen = "0.72"

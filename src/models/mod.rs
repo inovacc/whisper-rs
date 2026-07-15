@@ -40,9 +40,27 @@ pub fn cached_path(id: &str, cache_dir: &Path) -> Result<PathBuf> {
 /// Download the model if not already cached; return the local path.
 /// If the file already exists in `cache_dir`, returns it without downloading.
 pub fn download_model(id: &str, cache_dir: &Path) -> Result<PathBuf> {
+    download_to(id, cache_dir, None)
+}
+
+/// Download the model like [`download_model`], optionally verifying its SHA-256 digest against
+/// `expected_sha256` (hex, case-insensitive) before it is cached.
+///
+/// When `expected_sha256` is `Some`, the downloaded bytes (or an already-cached file) must hash to
+/// that digest, else `WhisperError::ModelDownload` is returned and a freshly-downloaded temp file is
+/// discarded. Passing `None` behaves exactly like [`download_model`].
+pub fn download_model_verified(id: &str, cache_dir: &Path, expected_sha256: Option<&str>) -> Result<PathBuf> {
+    download_to(id, cache_dir, expected_sha256)
+}
+
+/// Shared download implementation for [`download_model`] / [`download_model_verified`].
+fn download_to(id: &str, cache_dir: &Path, expected_sha256: Option<&str>) -> Result<PathBuf> {
     validate_id(id)?;
     let dest = cached_path(id, cache_dir)?;
     if dest.exists() {
+        if let Some(want) = expected_sha256 {
+            verify_sha256(&dest, want)?;
+        }
         return Ok(dest);
     }
     std::fs::create_dir_all(cache_dir)?;
@@ -62,21 +80,27 @@ pub fn download_model(id: &str, cache_dir: &Path) -> Result<PathBuf> {
             return Err(WhisperError::ModelDownload(format!("truncated download: expected {expected} bytes, got {copied}")));
         }
     }
+    if let Some(want) = expected_sha256 {
+        if let Err(e) = verify_sha256(&tmp, want) {
+            let _ = std::fs::remove_file(&tmp);
+            return Err(e);
+        }
+    }
     std::fs::rename(&tmp, &dest)?;
     Ok(dest)
 }
 
-/// Download the model like [`download_model`], optionally verifying its SHA-256 digest against
-/// `expected_sha256` (lowercase hex) before it is cached.
-///
-/// SHA-256 verification is not yet wired up (it would require adding a new dependency, which is a
-/// maintainer decision — see plan 005); passing `Some(_)` returns `WhisperError::Config` rather
-/// than silently skipping the check. Passing `None` behaves exactly like [`download_model`].
-pub fn download_model_verified(id: &str, cache_dir: &Path, expected_sha256: Option<&str>) -> Result<PathBuf> {
-    if expected_sha256.is_some() {
-        return Err(WhisperError::Config("sha verification not yet wired — see plan 005".into()));
+/// Compute the SHA-256 of the file at `path` and compare it (case-insensitive hex) against `want`.
+fn verify_sha256(path: &Path, want: &str) -> Result<()> {
+    use sha2::{Digest, Sha256};
+    let mut f = std::fs::File::open(path)?;
+    let mut hasher = Sha256::new();
+    std::io::copy(&mut f, &mut hasher)?;
+    let got: String = hasher.finalize().iter().map(|b| format!("{b:02x}")).collect();
+    if !got.eq_ignore_ascii_case(want.trim()) {
+        return Err(WhisperError::ModelDownload(format!("checksum mismatch: expected {}, got {got}", want.trim())));
     }
-    download_model(id, cache_dir)
+    Ok(())
 }
 
 /// Default cache dir for downloaded models.
