@@ -1,5 +1,5 @@
 # Backlog — whisper-rs
-<!-- rev:008 -->
+<!-- rev:009 -->
 
 Grounded in `docs/discovery/IDEA-BRIEF.md`, the approved design spec
 (`docs/superpowers/specs/2026-07-14-whisper-rs-design.md`), the implementation plans under
@@ -47,10 +47,12 @@ These are all part of the feature-rich v1 but land in later build-order plans (P
   whisper.cpp build friction becomes a real blocker. Effort: XL.
 
 ## P5 — Nice-to-haves / competitive parity (not committed)
-- **Convenience layer** — non-WAV input decoding (`symphonia` beyond WAV), SRT/VTT output writers.
-  Effort: M.
-- **Raw-API escape hatch** — expose the `ffi` module (currently `#[doc(hidden)]`) under an opt-in
-  feature for consumers who need unwrapped bindings, mirroring tazz4843/whisper-rs. Effort: S.
+- **SRT `.srt` / VTT `.vtt` writers** — ✅ shipped (`Transcript::to_srt`/`to_vtt`); see Resolved.
+- **Non-WAV input decoding** — ✅ shipped via the `ffmpeg` feature (ffmpeg-next 8.1); see Resolved.
+- **Raw-API escape hatch** — ✅ shipped as the `raw-api` feature; see Resolved.
+- **`ffmpeg` feature CI job** — the `ffmpeg` feature is excluded from CI `--all-features` (needs an
+  ffmpeg 8.x shared+dev build the runners lack). Add a job that fetches an ffmpeg 8.x build (e.g. BtbN)
+  and runs `cargo build --features ffmpeg` so the feature is gated in CI too. Effort: M.
 
 ## P2.5 — Foundation review follow-ups — ✅ RESOLVED 2026-07-14 (see Resolved)
 Optional future refinement: wire the real DTW params (`dtw_token_timestamps`/`dtw_aheads`) for
@@ -108,6 +110,12 @@ written — the analyst lacked a Write tool; citations are in the run record / t
   only new/active regions and reuse committed prefixes. Effort: L. (ROADMAP Phase 3.)
 
 ## Resolved
+- 2026-07-15 — **`steps:next all` feature/hardening batch.** LICENSE (BSD-3-Clause) added; SRT/VTT
+  subtitle writers (`Transcript::to_srt`/`to_vtt`); real SHA-256 verify in `download_model_verified`
+  (`sha2`); `WHISPER_RS_HF_BASE` model-host pin override; `raw-api` feature surfacing the `ffi` module;
+  `ffmpeg` feature — native m4a/mp3/… decode via ffmpeg-next 8.1 (`audio::media::decode_to_mono_16k`,
+  `Pipeline::transcribe_media_file`), verified decoding a real `.m4a` to 16 kHz mono; `transcribe`
+  example writes `.srt`/`.vtt` sidecars. Commits `5c317d0`..`8025fa1` on `main`.
 - 2026-07-15 — **MSRV corrected 1.75 → 1.86.** Verification found the declared `rust-version = "1.75"`
   is unachievable: the `ureq → url → idna → idna_adapter → icu_normalizer/icu_properties/icu_collections`
   (v2.2.0) chain declares `rust-version = "1.86"`. Raised `Cargo.toml` rust-version, the CI MSRV leg, and
