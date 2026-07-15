@@ -42,9 +42,8 @@ These are all part of the feature-rich v1 but land in later build-order plans (P
 - **SRT `.srt` / VTT `.vtt` writers** — ✅ shipped (`Transcript::to_srt`/`to_vtt`); see Resolved.
 - **Non-WAV input decoding** — ✅ shipped via the `ffmpeg` feature (ffmpeg-next 8.1); see Resolved.
 - **Raw-API escape hatch** — ✅ shipped as the `raw-api` feature; see Resolved.
-- **`ffmpeg` feature CI job** — the `ffmpeg` feature is excluded from CI `--all-features` (needs an
-  ffmpeg 8.x shared+dev build the runners lack). Add a job that fetches an ffmpeg 8.x build (e.g. BtbN)
-  and runs `cargo build --features ffmpeg` so the feature is gated in CI too. Effort: M.
+- **`ffmpeg` feature CI job** — ✅ shipped: a Linux CI job fetches the BtbN ffmpeg 8.1 shared+dev build,
+  sets `FFMPEG_DIR`, and runs `cargo build`/`clippy --features ffmpeg`.
 
 ## P2.5 — Foundation review follow-ups — ✅ RESOLVED 2026-07-14 (see Resolved)
 Optional future refinement: wire the real DTW params (`dtw_token_timestamps`/`dtw_aheads`) for

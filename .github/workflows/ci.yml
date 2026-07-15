@@ -87,3 +87,29 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Build (MSRV 1.86)
         run: cargo build --verbose
+
+  ffmpeg:
+    name: ffmpeg feature (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install libclang + clang
+        run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
+      - name: Fetch ffmpeg 8.1 shared+dev libraries
+        run: |
+          curl -L -o /tmp/ffmpeg.tar.xz \
+            https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.1-latest-linux64-gpl-shared-8.1.tar.xz
+          mkdir -p "$HOME/ffmpeg"
+          tar -xf /tmp/ffmpeg.tar.xz -C "$HOME/ffmpeg" --strip-components=1
+          echo "FFMPEG_DIR=$HOME/ffmpeg" >> "$GITHUB_ENV"
+          echo "LD_LIBRARY_PATH=$HOME/ffmpeg/lib" >> "$GITHUB_ENV"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Build --features ffmpeg
+        run: cargo build --features ffmpeg --verbose
+      - name: Clippy --features ffmpeg
+        run: cargo clippy --features ffmpeg -- -D warnings
