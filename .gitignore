@@ -4,3 +4,6 @@ Cargo.lock
 /models/*.onnx
 
 .superpowers/
+
+# local scratch (voice-note transcription runs)
+tmp/
