@@ -1,9 +1,13 @@
 # Roadmap — whisper-rs
-<!-- rev:008 -->
+<!-- rev:009 -->
 
 **Project type:** Rust crate (`Cargo.toml`, edition 2021, MSRV 1.86). This roadmap tracks the crate
 defined in `docs/superpowers/specs/2026-07-14-whisper-rs-design.md`, built by the plans under
 `docs/superpowers/plans/`, and hardened by the advisor plans under `plans/`.
+
+**🏷️ v0.1.0 released (2026-07-15)** — first stable tag. Full CI matrix green (3 OSes + coverage +
+cargo-audit + MSRV 1.86 + ffmpeg feature). See `CHANGELOG.md` and `docs/RELEASE-READINESS-20260715.md`
+(readiness verdict: GO, 83%). Fixed a latent build bug: the crate now compiles on Linux/macOS.
 
 **Status:** Foundation + the model-independent slices of every v1 feature are **built and merged**
 (batch ASR, word timestamps, `Pipeline`, post-/pre-processing, energy VAD, real HTTPS downloader,
