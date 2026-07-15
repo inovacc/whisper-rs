@@ -34,6 +34,12 @@ fn main() -> whisper_rs::Result<()> {
     };
 
     let mut pipe = Pipeline::builder().whisper_model(model).language(lang.clone()).build()?;
+    if lang.is_none() {
+        eprintln!(
+            "note: no language given — auto-detect can misfire on small models (wrong language + \
+             repetition loops). Pass an ISO code (e.g. `pt`, `en`) as the 3rd arg for reliable results."
+        );
+    }
     eprintln!("transcribing {wav} (lang={})...", lang.as_deref().unwrap_or("auto"));
     let t0 = std::time::Instant::now();
     let is_wav = Path::new(&wav).extension().map(|e| e.eq_ignore_ascii_case("wav")).unwrap_or(false);
