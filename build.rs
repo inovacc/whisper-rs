@@ -25,6 +25,10 @@ fn main() {
             build.flag_if_supported("/utf-8");
         } else {
             build.flag_if_supported("-pthread");
+            // ggml-cpu's NUMA/affinity code uses the glibc CPU_* macros (sched.h), which are gated
+            // behind _GNU_SOURCE. g++ defines it implicitly, but gcc (used for the C sources) does
+            // not — so define it explicitly, else CPU_ZERO/CPU_SET_S/... are undefined at link.
+            build.define("_GNU_SOURCE", None);
         }
     };
 
