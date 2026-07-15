@@ -1,5 +1,5 @@
 # Known Issues & Limitations — whisper-rs
-<!-- rev:002 -->
+<!-- rev:003 -->
 
 Tracks known limitations, caveats, and external blockers. For planned work see `docs/ROADMAP.md`;
 for prioritized follow-ups see `docs/BACKLOG.md`.
@@ -14,8 +14,10 @@ for prioritized follow-ups see `docs/BACKLOG.md`.
   enough for most uses; DTW wiring is an optional refinement (BACKLOG P2.5).
 - **Batch transcription is single-threaded per `Transcriber`.** whisper.cpp state is not `Sync`; use one
   `Transcriber`/`Pipeline` per thread. This is enforced by the type system (`Context: Send`, not `Sync`).
-- **Audio input is currently WAV (PCM int/float) only.** Other container/codecs (mp3, ogg, …) require a
-  broader decoder (`symphonia`) — a convenience-layer backlog item (BACKLOG P5).
+- **The default build decodes WAV (PCM int/float) only.** Other containers/codecs (m4a, mp3, ogg, …)
+  are supported via the opt-in `ffmpeg` feature (`Pipeline::transcribe_media_file` /
+  `audio::media::decode_to_mono_16k`, needs ffmpeg 8.x shared+dev libs). A pure-Rust `symphonia`
+  decoder (no native deps) remains a backlog alternative (BACKLOG P5).
 - **Long audio guard:** inputs over ~i32::MAX samples (~37 h @ 16 kHz) are rejected with a typed
   `Config` error rather than silently truncated.
 

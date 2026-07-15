@@ -1,17 +1,11 @@
 # Backlog — whisper-rs
-<!-- rev:009 -->
+<!-- rev:010 -->
 
 Grounded in `docs/discovery/IDEA-BRIEF.md`, the approved design spec
 (`docs/superpowers/specs/2026-07-14-whisper-rs-design.md`), the implementation plans under
 `docs/superpowers/plans/`, and the advisor maturation plans under `plans/`. The foundation + every
 model-independent v1 slice is built and merged; open items below are the model-gated, perf, and
 follow-up work that remains.
-
-## P1 — Blocking / must resolve before or during Phase 1
-- **Pin whisper.cpp submodule to a known tag** and confirm the `build.rs` source-file list matches
-  that tag's on-disk layout (the plan pins `v1.7.4`; verify at scaffold time). Effort: S.
-- **Acquire a small test-fixture model** (`ggml-tiny.en.bin`) + a known clip (`jfk.wav` ships in
-  whisper.cpp `samples/`) for the model-gated (`#[ignore]`) tests in Phases 1–2. Effort: S.
 
 ## P1 — Blocker: acquire HF-gated diarization models
 - **Accept the HuggingFace licenses + download `pyannote-segmentation-3.0.onnx` and a speaker-embedding
@@ -22,11 +16,9 @@ follow-up work that remains.
 ## P2 — Near-term
 - **Pin `ort`** to the exact pre-release rc + a tracking note when the diarization ONNX tasks land — it
   is pre-1.0, an API-stability risk (design spec). Effort: S.
-- **Wire real SHA-256 in `download_model_verified`** — the integrity hook exists but returns a `Config`
-  error when a digest is supplied (no `sha2` dep yet, a maintainer decision). Add `sha2`, compute the
-  temp-file digest before `rename`, and un-stub. Effort: S. (advisor plan 005 STOP-condition follow-up)
-- **Pin `HF_BASE` to an immutable revision** — the downloader resolves models from the mutable
-  `…/resolve/main` ref; pin a commit hash for a known-good model set (supply-chain hardening). Effort: S.
+- **Pin the default `HF_BASE` to an immutable revision** — the `WHISPER_RS_HF_BASE` override ships (a
+  consumer can already pin), but the *default* still resolves from the mutable `…/resolve/main` ref;
+  choosing a verified commit hash as the default is the remaining supply-chain step. Effort: S.
 
 ## P3 — Deferred v1-adjacent features (design-approved, scheduled post-foundation)
 These are all part of the feature-rich v1 but land in later build-order plans (Phases 2–4):
