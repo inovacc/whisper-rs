@@ -36,7 +36,21 @@ fn main() -> whisper_rs::Result<()> {
     let mut pipe = Pipeline::builder().whisper_model(model).language(lang.clone()).build()?;
     eprintln!("transcribing {wav} (lang={})...", lang.as_deref().unwrap_or("auto"));
     let t0 = std::time::Instant::now();
-    let transcript = pipe.transcribe_file(&wav)?;
+    let is_wav = Path::new(&wav).extension().map(|e| e.eq_ignore_ascii_case("wav")).unwrap_or(false);
+    let transcript = if is_wav {
+        pipe.transcribe_file(&wav)?
+    } else {
+        #[cfg(feature = "ffmpeg")]
+        {
+            pipe.transcribe_media_file(&wav)?
+        }
+        #[cfg(not(feature = "ffmpeg"))]
+        {
+            return Err(whisper_rs::WhisperError::Config(format!(
+                "{wav} is not a .wav — rebuild with `--features ffmpeg` to decode m4a/mp3/etc."
+            )));
+        }
+    };
     eprintln!("done in {:.1}s, {} segment(s)", t0.elapsed().as_secs_f32(), transcript.segments.len());
 
     for seg in &transcript.segments {

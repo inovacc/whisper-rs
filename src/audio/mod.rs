@@ -3,6 +3,8 @@ use crate::error::{Result, WhisperError};
 use rubato::{Resampler, SincFixedIn, SincInterpolationParameters, SincInterpolationType, WindowFunction};
 use std::path::Path;
 
+#[cfg(feature = "ffmpeg")]
+pub mod media;
 pub mod preprocess;
 pub mod vad;
 

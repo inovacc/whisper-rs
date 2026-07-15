@@ -83,6 +83,19 @@ impl Pipeline {
 
     pub fn transcribe_file<P: AsRef<Path>>(&mut self, path: P) -> Result<Transcript> {
         let pcm = AudioInput::from_wav_file(path)?.to_mono_16k()?;
+        self.transcribe_mono_16k(pcm)
+    }
+
+    /// Transcribe a non-WAV media file (m4a, mp3, flac, mp4, ...) by decoding it to 16 kHz mono via
+    /// the ffmpeg libraries, then running the same preprocess → ASR → post-process pipeline.
+    #[cfg(feature = "ffmpeg")]
+    pub fn transcribe_media_file<P: AsRef<Path>>(&mut self, path: P) -> Result<Transcript> {
+        let pcm = crate::audio::media::decode_to_mono_16k(path)?;
+        self.transcribe_mono_16k(pcm)
+    }
+
+    /// Shared tail: preprocess already-16 kHz-mono PCM, transcribe, and apply post-processing.
+    fn transcribe_mono_16k(&mut self, pcm: Vec<f32>) -> Result<Transcript> {
         let pcm = crate::audio::preprocess::preprocess(&pcm, self.preprocess);
         let mut segments = self.transcriber.transcribe(&pcm, &self.opts)?;
         if let Some(post) = &self.post {
