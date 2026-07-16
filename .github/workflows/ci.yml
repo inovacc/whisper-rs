@@ -122,3 +122,31 @@ jobs:
         run: cargo build --features ffmpeg --verbose
       - name: Clippy --features ffmpeg
         run: cargo clippy --features ffmpeg -- -D warnings
+      - name: Test --features ffmpeg (exercises the decode path)
+        run: cargo test --features ffmpeg --verbose
+
+  model-gated:
+    name: model-gated ASR (tiny.en)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install libclang + clang
+        run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Cache tiny.en GGML model
+        id: model-cache
+        uses: actions/cache@v4
+        with:
+          path: models/ggml-tiny.en.bin
+          key: ggml-tiny-en-bin-v1
+      - name: Download tiny.en model (cache miss only)
+        if: steps.model-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p models
+          curl -L --fail -o models/ggml-tiny.en.bin \
+            https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin
+      - name: Run model-gated ASR tests (real-audio regression)
+        run: cargo test --locked -- --ignored
