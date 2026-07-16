@@ -21,6 +21,15 @@ fn ff_err<E: std::fmt::Display>(e: E) -> WhisperError {
     WhisperError::AudioDecode(format!("ffmpeg: {e}"))
 }
 
+// The "in"/"out" pads are added in `build_graph`, so a miss means an unexpected libavfilter state
+// on the decode boundary — a typed error, not a panic (keeps `src/` panic-free on fallible paths).
+fn missing_in() -> WhisperError {
+    WhisperError::AudioDecode("ffmpeg: 'in' filter pad missing".into())
+}
+fn missing_out() -> WhisperError {
+    WhisperError::AudioDecode("ffmpeg: 'out' filter pad missing".into())
+}
+
 /// Decode `path` (any ffmpeg-supported audio/video container) to mono f32 PCM at 16 kHz — the format
 /// whisper.cpp expects. The best audio stream is used; video is ignored. Samples are in `[-1, 1]`.
 pub fn decode_to_mono_16k<P: AsRef<Path>>(path: P) -> Result<Vec<f32>> {
@@ -53,7 +62,7 @@ pub fn decode_to_mono_16k<P: AsRef<Path>>(path: P) -> Result<Vec<f32>> {
     pull_decoded(&mut decoder, &mut graph, &mut out)?;
 
     // Flush the filter graph so any buffered (resampler-delayed) samples are emitted.
-    graph.get("in").expect("in pad").source().flush().map_err(ff_err)?;
+    graph.get("in").ok_or_else(missing_in)?.source().flush().map_err(ff_err)?;
     pull_filtered(&mut graph, &mut out)?;
 
     Ok(out)
@@ -79,7 +88,7 @@ fn build_graph(decoder: &ffmpeg::decoder::Audio) -> Result<filter::Graph> {
     graph.add(&abuffer, "in", &args).map_err(ff_err)?;
     graph.add(&abuffersink, "out", "").map_err(ff_err)?;
     {
-        let mut out = graph.get("out").expect("out pad");
+        let mut out = graph.get("out").ok_or_else(missing_out)?;
         out.set_sample_format(Sample::F32(SampleType::Packed));
         out.set_channel_layout(ChannelLayout::MONO);
         out.set_sample_rate(TARGET_RATE);
@@ -96,7 +105,7 @@ fn build_graph(decoder: &ffmpeg::decoder::Audio) -> Result<filter::Graph> {
 fn pull_decoded(decoder: &mut ffmpeg::decoder::Audio, graph: &mut filter::Graph, out: &mut Vec<f32>) -> Result<()> {
     let mut decoded = frame::Audio::empty();
     while decoder.receive_frame(&mut decoded).is_ok() {
-        graph.get("in").expect("in pad").source().add(&decoded).map_err(ff_err)?;
+        graph.get("in").ok_or_else(missing_in)?.source().add(&decoded).map_err(ff_err)?;
         pull_filtered(graph, out)?;
     }
     Ok(())
@@ -105,7 +114,7 @@ fn pull_decoded(decoder: &mut ffmpeg::decoder::Audio, graph: &mut filter::Graph,
 /// Drain converted (packed-f32 mono 16 kHz) frames out of the sink.
 fn pull_filtered(graph: &mut filter::Graph, out: &mut Vec<f32>) -> Result<()> {
     let mut filtered = frame::Audio::empty();
-    while graph.get("out").expect("out pad").sink().frame(&mut filtered).is_ok() {
+    while graph.get("out").ok_or_else(missing_out)?.sink().frame(&mut filtered).is_ok() {
         let n = filtered.samples();
         if n > 0 {
             let data = filtered.plane::<f32>(0);
