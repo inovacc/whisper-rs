@@ -1,5 +1,5 @@
 # Backlog — whisper-rs
-<!-- rev:010 -->
+<!-- rev:011 -->
 
 Grounded in `docs/discovery/IDEA-BRIEF.md`, the approved design spec
 (`docs/superpowers/specs/2026-07-14-whisper-rs-design.md`), the implementation plans under
@@ -37,6 +37,13 @@ These are all part of the feature-rich v1 but land in later build-order plans (P
   heaviest deferred item. Effort: XL / unscoped.
 - **Pure-Rust Burn reimplementation** (whisper-burn) as an FFI alternative — revisit only if
   whisper.cpp build friction becomes a real blocker. Effort: XL.
+
+## P4.5 — Docs / polish (maturity tail)
+- **Enforce `#![deny(missing_docs)]`** — requires documenting every public item first (the crate has
+  undocumented public items today), otherwise the `-D warnings` CI gate hard-fails. Do the public-API
+  doc pass, then flip the lint. Effort: M. (MATURITY 3.2 tail.)
+- **Full crates.io release automation (release-plz)** — the tag-triggered GitHub Release ships; wire
+  release-plz for version-bump + changelog + publish once `publish` is enabled. Effort: M.
 
 ## P5 — Nice-to-haves / competitive parity (not committed)
 - **SRT `.srt` / VTT `.vtt` writers** — ✅ shipped (`Transcript::to_srt`/`to_vtt`); see Resolved.
@@ -101,6 +108,19 @@ written — the analyst lacked a Write tool; citations are in the run record / t
   only new/active regions and reuse committed prefixes. Effort: L. (ROADMAP Phase 3.)
 
 ## Resolved
+- 2026-07-15 — **Stage-4→5 maturity hardening batch (`steps:next all`, from `docs/analysis/MATURITY.md`).**
+  Commits `1599123`..`ea6d382` on `main`: public enums `WhisperError`/`ModelKind`/`ModelRef` made
+  `#[non_exhaustive]` + semver policy in AGENTS.md (1); `Cargo.lock` committed + `--locked` CI legs (3);
+  `cargo-deny` supply-chain gate — `deny.toml` + CI job (5); live-integration CI harness — model-gated
+  ASR job (downloads/caches tiny.en, runs `--ignored`) + `tests/media_decode.rs` exercising the ffmpeg
+  decode path, run in the ffmpeg CI job (2); ffmpeg filter-pad `.expect()`→`WhisperError` in `media.rs`
+  (4); zero-cost `tracing` facade behind the `tracing` feature, instrumenting download + transcribe (7);
+  proptest monotonicity properties for `enforce_monotonic` (8); tag-triggered GitHub Release workflow
+  (9); `docs/ARCHITECTURE.md` + ADR-0001/0002/0003 (10). **Deferred:** item 6 (pin default `HF_BASE`
+  to an immutable revision needs a verified commit SHA — the override already ships; pinning `ort` is
+  N/A until diarization ONNX lands) stays **P2**; `#![deny(missing_docs)]` needs a full public-API doc
+  pass first (would hard-fail `-D warnings` today) — new **P5** item; full crates.io release automation
+  (release-plz) deferred until `publish` is enabled.
 - 2026-07-15 — **`steps:next all` feature/hardening batch.** LICENSE (BSD-3-Clause) added; SRT/VTT
   subtitle writers (`Transcript::to_srt`/`to_vtt`); real SHA-256 verify in `download_model_verified`
   (`sha2`); `WHISPER_RS_HF_BASE` model-host pin override; `raw-api` feature surfacing the `ffi` module;

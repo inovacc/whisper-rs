@@ -1,5 +1,5 @@
 # Roadmap — whisper-rs
-<!-- rev:009 -->
+<!-- rev:010 -->
 
 **Project type:** Rust crate (`Cargo.toml`, edition 2021, MSRV 1.86). This roadmap tracks the crate
 defined in `docs/superpowers/specs/2026-07-14-whisper-rs-design.md`, built by the plans under
@@ -93,6 +93,21 @@ Independent `improve` audit → 10 vetted plans under `plans/`, each executed, r
 - [x] 008 — CI gates: `cargo fmt --check` + `cargo-audit` + MSRV 1.86 leg + `rustfmt.toml`
 - [x] 009 — test-coverage gaps (float-WAV decode, downloader cache-hit, cfg-off download)
 - [x] 010 — cleanups (in-place preprocess, `join_tokens`, stable cache dir, hallucination doc)
+
+## Phase 6 — Stage-4→5 maturity hardening (COMPLETE — 2026-07-15)
+Driven by `docs/analysis/MATURITY.md` (Stage 4, weighted 89.8). Commits `1599123`..`ea6d382` on `main`.
+- [x] `#[non_exhaustive]` on `WhisperError`/`ModelKind`/`ModelRef` + semver policy (AGENTS.md)
+- [x] `Cargo.lock` committed + `--locked` CI build legs (reproducible resolution)
+- [x] `cargo-deny` supply-chain gate (`deny.toml` + CI job: licenses/bans/advisories)
+- [x] **Live-integration CI harness** — model-gated ASR job (caches tiny.en, runs `--ignored`) +
+      `tests/media_decode.rs` exercising the ffmpeg decode path in the ffmpeg CI job (the MATURITY "one thing")
+- [x] ffmpeg filter-pad `.expect()` → `WhisperError` (`media.rs`) — `src/` panic-free on fallible paths
+- [x] Zero-cost `tracing` facade behind the `tracing` feature (download + transcribe instrumented)
+- [x] proptest monotonicity properties for `timestamps::enforce_monotonic`
+- [x] Tag-triggered GitHub Release workflow (changelog-driven)
+- [x] `docs/ARCHITECTURE.md` (Mermaid) + ADR-0001/0002/0003
+- [ ] Deferred: pin default `HF_BASE` to an immutable revision (needs a verified SHA; override ships) — BACKLOG P2
+- [ ] Deferred: `#![deny(missing_docs)]` after a full public-API doc pass — BACKLOG P4.5
 
 ## Test coverage
 `cargo llvm-cov` (CI + local). **Default features: 78.94% line / 76.68% region** (2026-07-14, after the
