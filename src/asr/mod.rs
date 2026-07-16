@@ -30,8 +30,10 @@ impl Transcriber {
 
     pub fn transcribe(&mut self, pcm: &[f32], opts: &AsrOptions) -> Result<Vec<Segment>> {
         let lang = opts.language.as_deref().unwrap_or("auto");
+        trace_debug!("transcribe: {} samples, lang={lang}, threads={}", pcm.len(), opts.threads);
         self.ctx.full(lang, opts.threads, true, pcm)?;
         let n = self.ctx.n_segments();
+        trace_debug!("transcribe produced {n} segments");
         let mut out = Vec::with_capacity(n as usize);
         for i in 0..n {
             out.push(Segment {

@@ -1,5 +1,10 @@
 //! whisper-rs — a feature-rich, safe Rust wrapper over whisper.cpp (local use).
 
+// Internal tracing facade macros (`trace_debug!`/`trace_info!`). Declared first so the macros are in
+// textual scope for every module below; no-op unless the `tracing` feature is enabled.
+#[macro_use]
+mod trace;
+
 pub mod asr;
 pub mod audio;
 #[cfg(feature = "diarization")]

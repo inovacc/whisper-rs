@@ -16,6 +16,9 @@ raw-api = []
 # Opt-in: decode non-WAV media (m4a/mp3/flac/ogg/...) via the ffmpeg libraries (ffmpeg-next).
 # Requires ffmpeg 8.x shared+dev libraries at build time (set FFMPEG_DIR) and the DLLs on PATH at runtime.
 ffmpeg = ["dep:ffmpeg-next"]
+# Opt-in: emit `tracing` spans/events from the FFI download + transcription paths. No-op otherwise;
+# the consumer installs their own subscriber.
+tracing = ["dep:tracing"]
 
 [dependencies]
 thiserror = "2"
@@ -24,6 +27,7 @@ rubato = "0.15"
 ureq = { version = "2", optional = true }
 sha2 = { version = "0.10", optional = true }
 ffmpeg-next = { version = "8.1", optional = true }
+tracing = { version = "0.1", optional = true }
 
 [build-dependencies]
 bindgen = "0.72"

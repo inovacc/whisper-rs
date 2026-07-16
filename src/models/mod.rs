@@ -72,10 +72,12 @@ fn download_to(id: &str, cache_dir: &Path, expected_sha256: Option<&str>) -> Res
         if let Some(want) = expected_sha256 {
             verify_sha256(&dest, want)?;
         }
+        trace_debug!("model cache hit: {}", dest.display());
         return Ok(dest);
     }
     std::fs::create_dir_all(cache_dir)?;
     let url = model_url(id);
+    trace_info!("downloading model id={id} from {url}");
     let resp = ureq::get(&url).call().map_err(|e| WhisperError::ModelDownload(format!("GET {url}: {e}")))?;
     let expected_len: Option<u64> = resp.header("Content-Length").and_then(|v| v.parse::<u64>().ok());
     let mut reader = resp.into_reader();
@@ -98,6 +100,7 @@ fn download_to(id: &str, cache_dir: &Path, expected_sha256: Option<&str>) -> Res
         }
     }
     std::fs::rename(&tmp, &dest)?;
+    trace_info!("model downloaded: {} ({copied} bytes)", dest.display());
     Ok(dest)
 }
 
