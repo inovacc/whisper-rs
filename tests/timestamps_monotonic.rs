@@ -10,10 +10,7 @@ use whisper_rs::timestamps::enforce_monotonic;
 /// Arbitrary word lists with finite (non-NaN, bounded) start/end times so comparisons are total.
 fn words_strategy() -> impl Strategy<Value = Vec<Word>> {
     proptest::collection::vec((-1000.0f32..1000.0, -1000.0f32..1000.0), 0..64).prop_map(|pairs| {
-        pairs
-            .into_iter()
-            .map(|(start, end)| Word { text: "w".into(), start, end, confidence: 0.5 })
-            .collect()
+        pairs.into_iter().map(|(start, end)| Word { text: "w".into(), start, end, confidence: 0.5 }).collect()
     })
 }
 

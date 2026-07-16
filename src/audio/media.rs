@@ -93,9 +93,12 @@ fn build_graph(decoder: &ffmpeg::decoder::Audio) -> Result<filter::Graph> {
         out.set_channel_layout(ChannelLayout::MONO);
         out.set_sample_rate(TARGET_RATE);
     }
-    // Explicit resample to the target rate — the sink's format/layout constraints auto-negotiate the
-    // downmix + f32 packing, but the sample-rate conversion must be requested in the chain itself.
-    let spec = format!("aresample={TARGET_RATE}");
+    // Explicitly resample to the target rate AND force packed-f32 mono in the chain. Relying on the
+    // sink's format constraints alone is not enough: when the input is already 16 kHz mono (e.g. a
+    // 16 kHz WAV) `aresample` is a no-op and no reformat is inserted, so the frame can reach the sink
+    // still in its source sample format — and `plane::<f32>` then panics. `aformat` makes the output
+    // deterministic regardless of the input format.
+    let spec = format!("aresample={TARGET_RATE},aformat=sample_fmts=flt:channel_layouts=mono");
     graph.output("in", 0).map_err(ff_err)?.input("out", 0).map_err(ff_err)?.parse(&spec).map_err(ff_err)?;
     graph.validate().map_err(ff_err)?;
     Ok(graph)

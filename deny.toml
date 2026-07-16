@@ -1,10 +1,10 @@
 # cargo-deny — supply-chain policy gate (advisories, licenses, bans, sources).
-# Checks the DEFAULT feature set; the opt-in `ffmpeg` feature pulls WTFPL/GPL-adjacent
-# native deps that a consumer explicitly accepts when they enable it, so they are out of
-# scope for the default gate. Run locally with: cargo deny check
+# Run locally with: cargo deny check
 #
-# The license allowlist is derived from `cargo metadata` over the default features — every
-# dependency's SPDX expression is satisfied by a permissive license in `allow` below.
+# cargo-deny evaluates the whole Cargo.lock graph, so optional-dependency licenses (e.g. the
+# opt-in `ffmpeg` feature's ffmpeg-next/ffmpeg-sys-next, licensed WTFPL) are in scope even
+# when the feature is off. The allowlist below covers every SPDX expression in the tree; all
+# are permissive / FSF-Free.
 
 [advisories]
 version = 2
@@ -22,6 +22,7 @@ allow = [
     "BSD-3-Clause",
     "Unicode-3.0",
     "CDLA-Permissive-2.0",
+    "WTFPL",
 ]
 
 [bans]
