@@ -74,6 +74,15 @@ jobs:
       - name: Audit dependencies
         run: cargo audit
 
+  cargo-deny:
+    name: cargo-deny (licenses, bans, advisories)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check
+
   msrv:
     name: msrv (1.86)
     runs-on: ubuntu-latest
