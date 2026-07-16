@@ -7,6 +7,7 @@ use crate::postprocess::PostConfig;
 use std::path::{Path, PathBuf};
 
 #[derive(Clone)]
+#[non_exhaustive]
 pub enum ModelRef {
     Path(PathBuf),
     #[allow(dead_code)]

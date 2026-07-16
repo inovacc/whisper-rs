@@ -1,5 +1,5 @@
 # AGENTS.md
-<!-- rev:003 -->
+<!-- rev:004 -->
 
 Canonical cross-tool agent instructions for `whisper-rs`. `CLAUDE.md` imports this file — edit here,
 not there.
@@ -99,6 +99,20 @@ via `cc`, then runs `bindgen` over `wrapper.h` to generate `OUT_DIR/bindings.rs`
   `ureq::get(...)` in `src/models/mod.rs` — it is a genuine network attack surface (URL
   construction, response handling, cache-path writes) and should be treated as a hardening
   checkpoint, not an afterthought (see plan 005).
+
+## API stability & semver
+
+The crate is pre-1.0 (`0.x`) and `publish = false` (local use). While `0.x`, a **minor** bump
+(`0.1 → 0.2`) may carry breaking changes and a **patch** bump (`0.1.0 → 0.1.1`) must not. The public
+API is not yet frozen — `1.0.0` is reserved for when model-backed diarization is activated and the
+surface is committed.
+
+- Public error/model enums (`WhisperError`, `ModelKind`, `ModelRef`) are `#[non_exhaustive]`: adding a
+  variant is **not** a breaking change, so downstream `match`es must include a wildcard arm. Keep new
+  fallible states as new `WhisperError` variants rather than overloading existing ones.
+- Prefer additive changes (new methods, new optional fields via builders) over signature changes.
+  When a breaking change is unavoidable pre-1.0, batch it into a minor bump and note it in
+  `CHANGELOG.md` under a `### Changed`/`### Removed` heading.
 
 ## Commit conventions
 

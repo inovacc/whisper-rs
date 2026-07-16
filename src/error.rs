@@ -2,6 +2,7 @@
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum ModelKind {
     Whisper,
     DiarizeSegmentation,
@@ -20,6 +21,7 @@ impl std::fmt::Display for ModelKind {
 }
 
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum WhisperError {
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
