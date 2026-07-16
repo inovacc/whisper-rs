@@ -35,8 +35,8 @@ jobs:
       - name: Format check
         if: runner.os == 'Linux'
         run: cargo fmt --all -- --check
-      - name: Build (default features)
-        run: cargo build --verbose
+      - name: Build (default features, locked)
+        run: cargo build --locked --verbose
       - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
       - name: Test (default features)
@@ -85,8 +85,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y llvm-dev libclang-dev clang
       - uses: dtolnay/rust-toolchain@1.86
       - uses: Swatinem/rust-cache@v2
-      - name: Build (MSRV 1.86)
-        run: cargo build --verbose
+      - name: Build (MSRV 1.86, locked)
+        run: cargo build --locked --verbose
 
   ffmpeg:
     name: ffmpeg feature (Linux)

@@ -1,7 +1,9 @@
 /target
-Cargo.lock
 /models/*.bin
 /models/*.onnx
+
+# Ephemeral command-audit scripts (AGENTS.md script-execution rule)
+.scripts/
 
 .superpowers/
 
