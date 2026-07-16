@@ -1,0 +1,33 @@
+name: Release
+# Cut a GitHub release from the CHANGELOG when a v* tag is pushed. The crate is `publish = false`
+# (local use), so this does not publish to crates.io — a release is a git tag plus notes. Full
+# crates.io automation (release-plz) is deferred until `publish` is enabled.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  github-release:
+    name: GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract the CHANGELOG section for this tag
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v ver="$version" '
+            $0 ~ "^## \\[" ver "\\]" { capture = 1; next }
+            capture && /^## \[/ { exit }
+            capture { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "Release ${GITHUB_REF_NAME} (no matching CHANGELOG section)." > release-notes.md
+          fi
+      - name: Create the release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: release-notes.md
